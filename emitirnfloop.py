@@ -13,6 +13,7 @@ def iniciar_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
+
 def selecionar_checkbox_e_campo():
     try:
         # Selecionar a primeira checkbox
@@ -63,7 +64,7 @@ def processar_nota_fiscal():
         print(f"XPath fornecido para o novo campo: {novo_campo_xpath}")
 #rolar para elemento
         def rolar_para_elemento(driver, xpath):
-            print(f"Executando rolar_para_elemento com XPath: {xpath}")
+            print(f"Executando rolar_para_elemento com XPath: {xpath}") 
             try:
                 elemento = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.XPATH, xpath))
@@ -93,8 +94,8 @@ def processar_nota_fiscal():
         time.sleep(2)
         clicar_no_elemento(driver, novo_campo_xpath)
 
-        # COLAR NO CAMPO DESTINO
-        campo_origem_xpath = '/html/body/div[27]/form/div/div/div/div[1]/div[2]/input'
+        # COLAR NO CAMPO DESTINO(MACROTAREFA)
+        campo_origem_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'
         campo_origem = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_origem_xpath))
         )
@@ -168,7 +169,7 @@ def processar_nota_fiscal():
             print(f"Erro ao clicar no campo de texto 'produto': {e}")
             driver.save_screenshot('erro_clicar_produto.png')
 #achar cfop e colar valor
-        campo_cfop_xpath = '/html/body/div[27]/form/div/div/div/div[3]/div[9]/input'
+        campo_cfop_xpath = '/html/body/div[28]/form/div/div/div/div[3]/div[9]/input'
         try:
             print(f"Tentando encontrar o elemento com XPath: {campo_cfop_xpath}")
             campo_cfop = WebDriverWait(driver, 10).until(
@@ -187,11 +188,11 @@ def processar_nota_fiscal():
             driver.save_screenshot('erro_campo_cfop.png')
             time.sleep(2)
 #apagando desconto
-        campo_apagar_xpath = '/html/body/div[27]/form/div/div/div/div[3]/div[6]/input'
+        campo_apagar_id = 'desconto'
         try:
-            print(f"Tentando encontrar o campo com XPath: {campo_apagar_xpath}")
+            print(f"Tentando encontrar o campo com XPath: {campo_apagar_id}")
             campo_apagar = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, campo_apagar_xpath))
+                EC.presence_of_element_located((By.XPATH, campo_apagar_id))
             )
             print("Campo encontrado.")
 
