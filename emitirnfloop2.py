@@ -8,34 +8,19 @@ import time
 
 # Função para iniciar o driver do Chrome
 def iniciar_driver():
-    chrome_options = Options()
-    chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-    driver = webdriver.Chrome(options=chrome_options)
-    return driver
-
-def verificar_acesso_pagina(driver, url):
     try:
-        driver.get(url)
-        time.sleep(2)  # Esperar 2 segundos para a página carregar
-        titulo_pagina = driver.title
-        print(f"Título da página acessada: {titulo_pagina}")
-        return True
+        print("Iniciando o driver do Chrome...")
+        chrome_options = Options()
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        driver = webdriver.Chrome(options=chrome_options)
+        print("Driver iniciado com sucesso.")
+        return driver
     except Exception as e:
-        print(f"Erro ao acessar a página: {e}")
-        return False
-
-if __name__ == "__main__":
-    driver = iniciar_driver()
-    url = "https://www.bling.com.br/notas.fiscais.php#list"
-    acesso_sucesso = verificar_acesso_pagina(driver, url)
-    if acesso_sucesso:
-        print("Página acessada com sucesso.")
-    else:
-        print("Falha ao acessar a página.")
-    driver.quit()
-
+        print(f"Erro ao iniciar o driver do Chrome: {e}")
+        return None
 
 def selecionar_checkbox_e_campo():
+    global driver
     try:
         print("Tentando selecionar a primeira checkbox...")
         # Selecionar a primeira checkbox
@@ -43,7 +28,7 @@ def selecionar_checkbox_e_campo():
         checkbox = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
-        time.sleep(2)
+        print(f"Checkbox encontrada: {checkbox}")
         checkbox.click()
         print("Checkbox selecionada com sucesso.")
         
@@ -56,6 +41,7 @@ def selecionar_checkbox_e_campo():
         campo = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, campo_xpath))
         )
+        print(f"Campo associado encontrado: {campo}")
         campo.click()
         print("Campo associado selecionado com sucesso.")
         
@@ -63,6 +49,7 @@ def selecionar_checkbox_e_campo():
         print(f"Erro ao selecionar a checkbox ou campo: {e}")
 
 def processar_nota_fiscal():
+    global driver
     try:
         selecionar_checkbox_e_campo()
         time.sleep(2)
@@ -123,15 +110,15 @@ def processar_nota_fiscal():
 
         
         # COLAR NO CAMPO DESTINO($$$$MACROTAREFA$$$$$$$$$$)
-        copiar_codigo_origemn_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'
+        copiar_codigo_origem_xpath = '/html/body/div[27]/form/div/div/div/div[1]/div[2]/input'
         campo_origem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, copiar_codigo_origemn_xpath))
+            EC.presence_of_element_located((By.XPATH, copiar_codigo_origem_xpath))
         )
         print("Campo de origem encontrado.")
 
         if campo_origem.is_displayed():
             print("Campo de origem está visível.")
-        else:   
+        else:
             print("Campo de origem não está visível.")
         
         # Copiar código do produto
@@ -242,9 +229,14 @@ def processar_nota_fiscal():
 # Função principal
 def main():
     global driver
+    print("Executando a função principal...")
     driver = iniciar_driver()
-    processar_nota_fiscal()
-    driver.quit()
+    if driver is not None:
+        processar_nota_fiscal()
+        driver.quit()
+        print("Driver encerrado.")
+    else:
+        print("Não foi possível iniciar o driver.")
 
 if __name__ == "__main__":
     main()
