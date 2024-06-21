@@ -110,7 +110,7 @@ def processar_nota_fiscal():
 
         
         # COLAR NO CAMPO DESTINO($$$$MACROTAREFA$$$$$$$$$$)
-        copiar_codigo_origem_xpath = '/html/body/div[27]/form/div/div/div/div[1]/div[2]/input'
+        copiar_codigo_origem_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'
         campo_origem = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, copiar_codigo_origem_xpath))
         )
