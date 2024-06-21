@@ -13,6 +13,7 @@ def iniciar_driver():
     driver = webdriver.Chrome(options=chrome_options)
     return driver
 
+# Função para verificar o acesso à página
 def verificar_acesso_pagina(driver, url):
     try:
         driver.get(url)
@@ -23,18 +24,7 @@ def verificar_acesso_pagina(driver, url):
     except Exception as e:
         print(f"Erro ao acessar a página: {e}")
         return False
-
-if __name__ == "__main__":
-    driver = iniciar_driver()
-    url = "https://www.bling.com.br/notas.fiscais.php#list"
-    acesso_sucesso = verificar_acesso_pagina(driver, url)
-    if acesso_sucesso:
-        print("Página acessada com sucesso.")
-    else:
-        print("Falha ao acessar a página.")
-    driver.quit()
-
-
+# Função para selecionar a checkbox e o campo associado
 def selecionar_checkbox_e_campo():
     try:
         print("Tentando selecionar a primeira checkbox...")
@@ -43,13 +33,11 @@ def selecionar_checkbox_e_campo():
         checkbox = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
-        time.sleep(2)
         checkbox.click()
-        print("Checkbox selecionada com sucesso.")
-        
+        '''time.sleep(2)
+        print("Checkbox selecionada com sucesso.")'''
         # Esperar 2 segundos
         time.sleep(2)
-        
         print("Tentando selecionar o campo associado à checkbox...")
         # Selecionar o campo associado à checkbox
         campo_xpath = '/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[1]/td[3]/span[2]'
@@ -62,6 +50,7 @@ def selecionar_checkbox_e_campo():
     except Exception as e:
         print(f"Erro ao selecionar a checkbox ou campo: {e}")
 
+# Função para processar a nota fiscal
 def processar_nota_fiscal():
     try:
         selecionar_checkbox_e_campo()
@@ -86,10 +75,9 @@ def processar_nota_fiscal():
         time.sleep(2)
         
         print("Tentando selecionar e clicar no produto...")
-        # Selecionar e clicar no produto em si
+        # Selecionar e clicar no produto #1 dentro da nota
         novo_campo_xpath = '/html/body/div[6]/div[2]/form/div/div/div[42]/table/tbody/tr[1]/td[9]/span[5]'
         print(f"XPath fornecido para o novo campo: {novo_campo_xpath}")
-        
         def rolar_para_elemento(driver, xpath):
             print(f"Executando rolar_para_elemento com XPath: {xpath}") 
             try:
@@ -103,7 +91,6 @@ def processar_nota_fiscal():
                 print(f"Elemento visível: {is_displayed}")
             except Exception as e:
                 print(f"Erro ao rolar para o elemento: {e}")
-        
         def clicar_no_elemento(driver, xpath):
             print(f"Executando clicar_no_elemento com XPath: {xpath}")
             try:
@@ -116,14 +103,11 @@ def processar_nota_fiscal():
                 print(f"Elemento com XPath {xpath} clicado com JavaScript.")
             except Exception as e:
                 print(f"Erro ao clicar no elemento com JavaScript: {e}")
-
-        rolar_para_elemento(driver, novo_campo_xpath)
+        '''rolar_para_elemento(driver, novo_campo_xpath)
         time.sleep(2)
-        clicar_no_elemento(driver, novo_campo_xpath)
-
-        
+        clicar_no_elemento(driver, novo_campo_xpath)'''
         # COLAR NO CAMPO DESTINO($$$$MACROTAREFA$$$$$$$$$$)
-        copiar_codigo_origemn_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'
+        copiar_codigo_origemn_xpath = '/html/body/div[27]/form/div/div/div/div[1]/div[2]/input'
         campo_origem = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, copiar_codigo_origemn_xpath))
         )
@@ -150,13 +134,11 @@ def processar_nota_fiscal():
             EC.presence_of_element_located((By.ID, campo_destino_id))
         )
         print("Campo de destino encontrado.")
-        driver.save_screenshot('campo_destino_encontrado.png')
 
         if campo_destino.is_displayed():
             print("Campo de destino está visível.")
         else:
             print("Campo de destino não está visível.")
-            driver.save_screenshot('campo_destino_nao_visivel.png')
 
         time.sleep(2)
 
@@ -166,10 +148,8 @@ def processar_nota_fiscal():
             print("Campo de destino limpo. Tentando colar o texto.")
             campo_destino.send_keys(copiacodigo)
             print(f"Texto colado no elemento com ID {campo_destino_id}: {copiacodigo}")
-            driver.save_screenshot('texto_colado.png')
         except Exception as e:
             print(f"Erro ao colar o texto no campo de destino: {e}")
-            driver.save_screenshot('erro_colar_texto.png')
 
         # Abrindo produto - seta pra baixo
         time.sleep(2)
@@ -177,10 +157,8 @@ def processar_nota_fiscal():
             print("Tentando pressionar a seta para baixo.")
             campo_destino.send_keys(Keys.ARROW_DOWN)
             print("Seta para baixo pressionada com sucesso.")
-            driver.save_screenshot('pressionar_seta_para_baixo.png')
         except Exception as e:
             print(f"Erro ao pressionar a seta para baixo: {e}")
-            driver.save_screenshot('erro_pressionar_seta_para_baixo.png')
 
         time.sleep(2)
         
@@ -192,13 +170,10 @@ def processar_nota_fiscal():
                 EC.presence_of_element_located((By.XPATH, campo_produto_xpath))
             )
             print("Campo de texto 'produto' encontrado.")
-            driver.save_screenshot('campo_produto_encontrado.png')
             campo_produto.click()
             print(f"Campo de texto 'produto' com XPath {campo_produto_xpath} clicado.")
-            driver.save_screenshot('campo_produto_clicado.png')
         except Exception as e:
             print(f"Erro ao clicar no campo de texto 'produto': {e}")
-            driver.save_screenshot('erro_clicar_produto.png')
         
         print("Tentando colar o valor no campo CFOP...")
         # Achar CFOP e colar valor
@@ -209,16 +184,13 @@ def processar_nota_fiscal():
                 EC.presence_of_element_located((By.XPATH, campo_cfop_xpath))
             )
             print("Campo CFOP encontrado.")
-            driver.save_screenshot('campo_cfop_encontrado.png')
             time.sleep(2)
             print(f"Colando o valor {cfop} no campo CFOP.")
             campo_cfop.clear()
             campo_cfop.send_keys(str(cfop))
             print(f"Valor {cfop} colado no campo CFOP.")
-            driver.save_screenshot('valor_cfop_colado.png')
         except Exception as e:
             print(f"Erro ao colar o valor no campo CFOP: {e}")
-            driver.save_screenshot('erro_campo_cfop.png')
             time.sleep(2)
         
         print("Tentando apagar o valor do desconto...")
@@ -239,11 +211,29 @@ def processar_nota_fiscal():
     except Exception as e:
         print(f"Ocorreu um erro inesperado: {e}")
 
+# Função para verificar se há mais notas fiscais
+def existem_mais_notas_fiscais(driver):
+    try:
+        elemento = driver.find_element(By.XPATH, "/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[1]/td[1]/div/label")
+        return elemento is not None
+    except:
+        return False
+
 # Função principal
 def main():
     global driver
     driver = iniciar_driver()
-    processar_nota_fiscal()
+    url = "https://www.bling.com.br/notas.fiscais.php#list"
+    if verificar_acesso_pagina(driver, url):
+        print("Página acessada com sucesso.")
+        while existem_mais_notas_fiscais(driver):
+            sucesso = processar_nota_fiscal()
+            if not sucesso:
+                break
+            time.sleep(2)  # Delay entre cada iteração do loop
+        print("Todas as notas fiscais foram processadas.")
+    else:
+        print("Falha ao acessar a página.")
     driver.quit()
 
 if __name__ == "__main__":
