@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys  # Adicione esta linha
 import time
 
 # Configurar opções do Chrome para depuração remota
@@ -14,11 +15,11 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # Capturar o ID da aba aberta
 current_window_handle = driver.current_window_handle
-print("42213A7CBD6DBF98351677B4BAEC31DD", current_window_handle)
+print("1C4E456BE19D3F82D7B81A7C05B0D031", current_window_handle)
 
 # Lista de todas as abas abertas
 window_handles = driver.window_handles
-print("42213A7CBD6DBF98351677B4BAEC31DD", window_handles)
+print("1C4E456BE19D3F82D7B81A7C05B0D031", window_handles)
 
 # Certifique-se de que você está na página correta
 expected_url = "https://www.bling.com.br/notas.fiscais.php#list"
@@ -156,6 +157,143 @@ time.sleep(2)
 # Executar a função para clicar no elemento
 clicar_no_elemento(driver, novo_campo_xpath)
 ######### FIM DO BLOCO DE CLIQUE ADICIONAL (PARTE 2: clicar no ELEMENTO) #########
+
+'''######################################################################################copiar campo
+campo_origem_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'
+campo_origem = WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.XPATH, campo_origem_xpath))
+)'''
+
+#############COLARCAMPO
+# Localizar o campo de destino (onde o texto será colado)
+driver.implicitly_wait(10)
+
+try:
+    # Localizar o campo de origem (onde o texto será copiado)
+    campo_origem_xpath = '/html/body/div[27]/form/div/div/div/div[1]/div[2]/input'
+    campo_origem = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, campo_origem_xpath))
+    )
+    print("Campo de origem encontrado.")
+
+    # Verificar se o campo de origem está visível
+    if campo_origem.is_displayed():
+        print("Campo de origem está visível.")
+    else:
+        print("Campo de origem não está visível.")
+
+    # Copiar o texto do campo de origem e armazenar na variável copiacodigo
+    copiacodigo = campo_origem.get_attribute("value")
+    if copiacodigo:
+        print(f"Texto copiado: {copiacodigo}")
+    else:
+        print("Texto copiado está vazio ou None.")
+    
+
+
+
+    # Localizar o campo de destino pelo ID
+    campo_destino_id = 'edDescricao'
+    print(f"Tentando encontrar o elemento com ID: {campo_destino_id}")
+    time.sleep(2)
+
+
+    campo_destino = WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.ID, campo_destino_id))
+    )
+    print("Campo de destino encontrado.")
+    driver.save_screenshot('campo_destino_encontrado.png')
+
+    # Verificar se o campo de destino está visível
+    if campo_destino.is_displayed():
+        print("Campo de destino está visível.")
+    else:
+        print("Campo de destino não está visível.")
+        driver.save_screenshot('campo_destino_nao_visivel.png')
+
+    # Tentar colar o texto no campo de destino
+    time.sleep(2)
+
+    try:
+        print("Tentando limpar o campo de destino.")
+        campo_destino.clear()  # Limpar o campo antes de colar o texto, se necessário
+        print("Campo de destino limpo. Tentando colar o texto.")
+        campo_destino.send_keys(copiacodigo)
+        print(f"Texto colado no elemento com ID {campo_destino_id}: {copiacodigo}")
+        driver.save_screenshot('texto_colado.png')
+    except Exception as e:
+        print(f"Erro ao colar o texto no campo de destino: {e}")
+        driver.save_screenshot('erro_colar_texto.png')
+
+except Exception as e:
+    print(f"Erro ao localizar elemento ou colar texto: {e}")
+    driver.save_screenshot('erro.png')
+
+
+####### Localizar o campo de texto pelo ID e clicar nele
+
+    campo_produto_id = 'ui-id-53'
+    print(f"Tentando encontrar o elemento com ID: {campo_produto_id}")
+
+    campo_produto = WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.ID, campo_produto_id))
+    )
+    print("Campo de texto 'produto' encontrado.")
+    driver.save_screenshot('campo_produto_encontrado.png')
+    time.sleep(2)
+
+    # Clicar no campo de texto 'produto'
+    try:
+        campo_produto.click()
+        print(f"Campo de texto 'produto' com ID {campo_produto_id} clicado.")
+        driver.save_screenshot('campo_produto_clicado.png')
+    except Exception as e:
+        print(f"Erro ao clicar no campo de texto 'produto': {e}")
+        driver.save_screenshot('erro_clicar_produto.png')
+
+    except Exception as e:
+        print(f"Erro ao localizar elemento ou colar texto: {e}")
+        driver.save_screenshot('erro.png')
+
+# Pressionar a seta para baixo no teclado
+    try:
+        print("Tentando pressionar a seta para baixo.")
+        campo_destino.send_keys(Keys.ARROW_DOWN)
+        print("Seta para baixo pressionada com sucesso.")
+        driver.save_screenshot('pressionar_seta_para_baixo.png')
+    except Exception as e:
+        print(f"Erro ao pressionar a seta para baixo: {e}")
+        driver.save_screenshot('erro_pressionar_seta_para_baixo.png')
+
+    # Pressionar a seta para baixo no teclado
+try:
+    print("Tentando pressionar a seta para baixo.")
+    campo_destino.send_keys(Keys.ARROW_DOWN)
+    print("Seta para baixo pressionada com sucesso.")
+    driver.save_screenshot('pressionar_seta_para_baixo.png')
+except Exception as e:
+    print(f"Erro ao pressionar a seta para baixo: {e}")
+    driver.save_screenshot('erro_pressionar_seta_para_baixo.png')
+
+# Localizar o campo de texto 'produto' pelo XPath e clicar nele
+campo_produto_xpath = '/html/body/ul[3]/li/a'
+try:
+    print(f"Tentando encontrar o elemento com XPath: {campo_produto_xpath}")
+    campo_produto = WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, campo_produto_xpath))
+    )
+    print("Campo de texto 'produto' encontrado.")
+    driver.save_screenshot('campo_produto_encontrado.png')
+    campo_produto.click()
+    print(f"Campo de texto 'produto' com XPath {campo_produto_xpath} clicado.")
+    driver.save_screenshot('campo_produto_clicado.png')
+except Exception as e:
+    print(f"Erro ao clicar no campo de texto 'produto': {e}")
+    driver.save_screenshot('erro_clicar_produto.png')
+
+except Exception as e:
+    print(f"Erro ao localizar elemento ou colar texto: {e}")
+    driver.save_screenshot('erro.png')
 
 
 print("Aguardando novas instruções ou ações manuais...")
