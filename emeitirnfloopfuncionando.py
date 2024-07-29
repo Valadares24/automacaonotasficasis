@@ -2,14 +2,15 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as EC    
 from selenium.webdriver.common.keys import Keys
 import time
+import winsound 
 
 # Função para iniciar o driver do Chrome
 def iniciar_driver():
-    try:
-        print("Iniciando o driver do Chrome...")
+    try:    
+        print("Iniciando o driver do Chrome...")    
         chrome_options = Options()
         # Corrigido para usar apenas o endereço de depuração
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
@@ -19,6 +20,7 @@ def iniciar_driver():
         return driver
     except Exception as e:
         print(f"Erro ao iniciar o driver do Chrome: {e}")
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         return None
 
 def selecionar_checkbox_e_campo():
@@ -91,6 +93,7 @@ def processar_nota_fiscal():
                 is_displayed = elemento.is_displayed()
                 print(f"Elemento visível: {is_displayed}")
             except Exception as e:
+                winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
                 print(f"Erro ao rolar para o elemento: {e}")
         
         def clicar_no_elemento(driver, xpath):
@@ -104,6 +107,7 @@ def processar_nota_fiscal():
                 driver.execute_script("arguments[0].click();", elemento)
                 print(f"Elemento com XPath {xpath} clicado com JavaScript.")
             except Exception as e:
+                winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
                 print(f"Erro ao clicar no elemento com JavaScript: {e}")
 
         rolar_para_elemento(driver, novo_campo_xpath)
@@ -157,6 +161,7 @@ def processar_nota_fiscal():
             driver.save_screenshot('texto_colado.png')
         except Exception as e:
             print(f"Erro ao colar o texto no campo de destino: {e}")
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
             driver.save_screenshot('erro_colar_texto.png')
 
         # Abrindo produto - seta pra baixo
@@ -168,6 +173,7 @@ def processar_nota_fiscal():
             driver.save_screenshot('pressionar_seta_para_baixo.png')
         except Exception as e:
             print(f"Erro ao pressionar a seta para baixo: {e}")
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
             driver.save_screenshot('erro_pressionar_seta_para_baixo.png')
 
         time.sleep(2)
@@ -186,7 +192,7 @@ def processar_nota_fiscal():
             driver.save_screenshot('campo_produto_clicado.png')
         except Exception as e:
             print(f"Erro ao clicar no campo de texto 'produto': {e}")
-            driver.save_screenshot('erro_clicar_produto.png')
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         
         print("Tentando colar o valor no campo CFOP...")
         # Achar CFOP e colar valor
@@ -203,10 +209,10 @@ def processar_nota_fiscal():
             campo_cfop.clear()
             campo_cfop.send_keys(str(cfop))
             print(f"Valor {cfop} colado no campo CFOP.")
-            driver.save_screenshot('valor_cfop_colado.png')
+            driver.save_screenshot('valor_cfop_colado.png')                     
         except Exception as e:
             print(f"Erro ao colar o valor no campo CFOP: {e}")
-            driver.save_screenshot('erro_campo_cfop.png')
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
             time.sleep(2)
         
         # Salvar alterações no item da nota
@@ -220,11 +226,12 @@ def processar_nota_fiscal():
             print("Alterações no item da nota salvas com sucesso.")
             time.sleep(2)
         except Exception as e:
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
             print(f"Erro ao salvar as alterações no item da nota: {e}")
 
     #   Clicando no produto novamente
         clicar_no_elemento(driver, novo_campo_xpath)
-
+        ####trecho de apagar desconto do item
         print("Tentando apagar o valor do desconto...")
         # Apagando desconto
         campo_apagar_xpath = '//*[@id="edValorDescontoItem"]'
@@ -238,11 +245,14 @@ def processar_nota_fiscal():
             campo_apagar.clear()
             print("Desconto apagado.")
         except Exception as e:
+            winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
             print(f"Erro ao apagar o desconto: {e}")
         
         print("Processo concluído.")
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"Ocorreu um erro inesperado: {e}")
+        ####trecho de apagar desconto do item
 
     # Salvar alterações no item da nota
     try:
@@ -255,6 +265,21 @@ def processar_nota_fiscal():
         print("Alterações no item da nota salvas com sucesso.")
         time.sleep(2)
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
+        print(f"Erro ao salvar as alterações no item da nota: {e}")
+
+# Salvar alterações no item da nota
+    try:
+        print("Tentando salvar as alterações no item da nota...")
+        botao_salvar_item_xpath = '/html/body/div[28]/div[2]/div/button'  # Preencha o XPath do botão de salvar alterações
+        botao_salvar_item = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
+        )
+        botao_salvar_item.click()
+        print("Alterações no item da nota salvas com sucesso.")
+        time.sleep(2)
+    except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"Erro ao salvar as alterações no item da nota: {e}")
 
         # Salvar alterações DA NOTA
@@ -268,9 +293,12 @@ def processar_nota_fiscal():
         print("Alterações na nota salvas com sucesso.")
         time.sleep(2)
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"Erro ao salvar as alterações na nota: {e}")
 
         time.sleep(5)
+        #adicionar condicional de erro neste ponto
+        
     # EVNIAR A NOTA
     try:
         print("Tentando enviar a nota salva")
@@ -282,6 +310,7 @@ def processar_nota_fiscal():
         print("Alterações na nota salvas com sucesso.")
         time.sleep(2)
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"Erro ao enviar a nota: {e}")
         
         time.sleep(2)
@@ -296,6 +325,7 @@ def processar_nota_fiscal():
         print("nota enviada")
         time.sleep(2)
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"Erro ao enviar a nota: {e}")
         
          
@@ -311,6 +341,7 @@ def processar_nota_fiscal():
         print("envio validado")
         time.sleep(2)
     except Exception as e:
+        winsound.Beep(1000, 2000)  # 1000 Hz por 500 milissegundos
         print(f"erro ao valiodar envio {e}")
 
 
