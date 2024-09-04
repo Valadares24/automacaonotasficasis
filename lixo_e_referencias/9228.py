@@ -1,5 +1,4 @@
 from selenium import webdriver
-from current.futures import ThreadPoolExecuter
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,7 +11,7 @@ def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9223")
         driver = webdriver.Chrome(options=chrome_options)
         print("Driver iniciado com sucesso.")
         return driver
@@ -20,11 +19,12 @@ def iniciar_driver():
         print(f"Erro ao iniciar o driver do Chrome: {e}")
         return None
 
+
 def selecionar_checkbox_e_campo(driver, index):
     try:
         print(f"Tentando selecionar a checkbox {index}...")
-        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
-        campo_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
+        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{10}]/td[1]/div/label'
+        campo_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{10}]/td[4]'
         checkbox = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
@@ -49,6 +49,19 @@ def determinar_cfop(cep_text):
     else:
         return 6108
 
+def desmarcar_checkbox_atual(driver, index):#desmarcar
+    try:
+        print(f"Tentando desmarcar a checkbox {index}...")
+        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
+        checkbox = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(checkbox).click().perform()
+        print(f"Checkbox {index} desmarcada.")
+    except Exception as e:
+        print(f"Erro ao desmarcar checkbox: {e}")
+
 def clicar_no_elemento(driver, xpath):
     print(f"Executando clicar_no_elemento com XPath: {xpath}")
     try:
@@ -56,7 +69,7 @@ def clicar_no_elemento(driver, xpath):
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
         print(f"Elemento com XPath {xpath} está clicável.")
-        time.sleep(1)
+        #time.sleep(1)
         actions = ActionChains(driver)
         actions.move_to_element(elemento).click().perform()
         print(f"Elemento com XPath {xpath} clicado com ActionChains.")
@@ -107,7 +120,7 @@ def processar_item(driver, cfop, item_xpath):
 
         # Apagar desconto
         campo_apagar_xpath = '//*[@id="edValorDescontoItem"]'
-        time.sleep(1)
+        #time.sleep(1)
         campo_apagar = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_apagar_xpath))
         )
@@ -129,7 +142,7 @@ def processar_item(driver, cfop, item_xpath):
             EC.presence_of_element_located((By.XPATH, campo_destino_xpath))
         )
         
-        print("Campo de destino encontrado.")
+        print("Campo de destino encontrado.")#codigo produto
         campo_destino.clear()
         campo_destino.send_keys(copiacodigo)
         print(f"Texto colado no elemento com ID {campo_destino_xpath}: {copiacodigo}")
@@ -139,12 +152,13 @@ def processar_item(driver, cfop, item_xpath):
         actions = ActionChains(driver)
         actions.send_keys(Keys.RETURN).perform()
         time.sleep(1)
+        
 
         campo_cfop_xpath = '/html/body/div[28]/form/div/div/div/div[3]/div[9]/input'
         campo_cfop = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_cfop_xpath))
         )
-        time.sleep(1)
+        #time.sleep(1)
         campo_cfop.clear()
         campo_cfop.send_keys(str(cfop))
         print(f"Valor {cfop} colado no campo CFOP.")
@@ -162,6 +176,38 @@ def processar_item(driver, cfop, item_xpath):
 
     except Exception as e:
         print(f"Erro ao processar o item: {e}")
+        #primeiro salvar o item da nota
+        botao_salvar_item_xpath = '/html/body/div[28]/div[2]/div/button'
+        botao_salvar_item = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_salvar_item).click().perform()
+        print("Alterações no item da nota salvas com sucesso.")
+        time.sleep(1)
+        #cancela a emissao dessa nota
+        print("Tentando cancelar o processo...")
+        botao_cancelar_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[2]/button'
+        botao_cancelar = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_cancelar).click().perform()
+        print("Processo cancelado.")
+        def desmarcar_checkbox_atual(driver, index):
+            try:
+                print(f"Tentando desmarcar a checkbox {index}...")
+                checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
+                checkbox = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
+                )
+                actions = ActionChains(driver)
+                actions.move_to_element(checkbox).click().perform()
+                print(f"Checkbox {index} desmarcada.")
+            except Exception as e:
+                         print(f"Erro ao desmarcar checkbox: {e}")
+        
+        
 
 def salvar_alteracoes_item(driver):
     try:
@@ -181,7 +227,7 @@ def salvar_alteracoes_item(driver):
 def processar_nota_fiscal(driver, index):
     try:
         selecionar_checkbox_e_campo(driver, index)
-        time.sleep(1)
+        #time.sleep(1)
         
         print("Iniciando a captura do CEP...")
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -248,23 +294,70 @@ def emitir_nota_fiscal(driver):
         actions = ActionChains(driver)
         actions.move_to_element(botao_imprimir_nota).click().perform()
         print("Nota enviada para impressão.")
-        time.sleep(15)
+        #time.sleep(12)
 
     except Exception as e:
         print(f"Erro ao enviar a nota para impressão: {e}")
 
-    try:
-        print("Validar envio da nota salva")#'ok' na nota no fim da impressao
-        botao_validar_envio_xpath = '//html/body/div[28]/div[3]/div/button'
-        botao_validar_envio = WebDriverWait(driver, 30).until(
-            EC.element_to_be_clickable((By.XPATH, botao_validar_envio_xpath))
+    try:#check
+        print('verificar condição de encerramento')
+            # Obtém o elemento e extrai o texto
+        
+        mensagem_verificar_xpath = '/html/body/div[28]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'
+        WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath))
+    )
+        mensagem_verificar_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH,  mensagem_verificar_xpath))
         )
-        actions = ActionChains(driver)
-        actions.move_to_element(botao_validar_envio).click().perform()
-        print("Envio validado com sucesso.")
-        time.sleep(2)
+        botao_imprimir_final_xpath = '/html/body/div[28]/div[3]/div/button'
+        botao_imprimir_final = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
+        mensagem_verificar = mensagem_verificar_element.text
+        print(f"mensagem_verificar: {mensagem_verificar}")
+        #time.sleep(2)
+
+        while True:  # Loop infinito até que a condição seja satisfeita
+            print('Entramos no bloco de verificação')
+            if 'Notas fiscais eletrônicas autorizadas com sucesso' in mensagem_verificar or 'Não há nada para ser feito' in mensagem_verificar:
+                actions = ActionChains(driver)
+                actions.move_to_element(botao_imprimir_final).click().perform()
+                print('Sucesso na emissão')
+                time.sleep(1)
+                break  # Sai do loop se a condição for satisfeita
+
+            elif 'Notas fiscais eletrônicas não foram validadas' in mensagem_verificar:
+                print('Emissão não concluída')
+                botao_erro_nota_xpath = '/html/body/div[28]/div[3]/div/button'
+                botao_enviar_nota = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
+                actions = ActionChains(driver)
+                actions.move_to_element(botao_enviar_nota).click().perform()
+                time.sleep(2)
+                def desmarcar_checkbox_atual(driver, index):
+                    try:
+                        print(f"Tentando desmarcar a checkbox {index}...")
+                        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
+                        checkbox = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
+                        )
+                        actions = ActionChains(driver)
+                        actions.move_to_element(checkbox).click().perform()
+                        print(f"Checkbox {index} desmarcada.")
+                    except Exception as e:
+                         print(f"Erro ao desmarcar checkbox: {e}")
+
+
+                # Você pode atualizar ou verificar a 'mensagem_verificar' novamente aqui
+                mensagem_verificar = driver.find_element(By.XPATH, "xpath_da_mensagem").text  # Supondo que você tenha um XPath para a mensagem
+            else:
+                print("Nenhuma das condições foi satisfeita, tentando novamente...")
+                time.sleep(2)  # Espera um tempo antes de tentar novamente
+
+#xpath pra encerrar a impressao /html/body/div[28]/div[3]/div/button
     except Exception as e:
-        print(f"Erro ao validar envio: {e}") 
+            print(f"Erro ao validar envio: {e}") 
+            
+
+
 
 def verificar_erro_salvamento(driver):
     try:
@@ -294,18 +387,6 @@ def cancelar_processo(driver):
     except Exception as e:
         print(f"Erro ao cancelar o processo: {e}")
 
-def desmarcar_checkbox_atual(driver, index):
-    try:
-        print(f"Tentando desmarcar a checkbox {index}...")
-        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
-        checkbox = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
-        )
-        actions = ActionChains(driver)
-        actions.move_to_element(checkbox).click().perform()
-        print(f"Checkbox {index} desmarcada.")
-    except Exception as e:
-        print(f"Erro ao desmarcar checkbox: {e}")
 
 def existem_mais_notas_fiscais(driver):
     try:
@@ -324,6 +405,7 @@ def print_summary(success_count, error_count):
 def main():
     driver = iniciar_driver()
     if driver is not None:
+        processar_nota_fiscal(driver, 1)#novo
         driver.get("https://www.bling.com.br/notas.fiscais.php#list")  # Abrir a página específica
         success_count = 0
         error_count = 0

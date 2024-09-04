@@ -1,0 +1,47 @@
+indice nao esta sen do acrescido apos cenario de erro - verificar condição de add
+    indice acrescido em caso de erro na aedição da nota mas nao na impressao - 
+tempo de excecução insuficiente - gerando erro no salvamento/cancelamento da nota - [ok]
+verificar avaliação de cep para cfop - adicionar log que devolve o cfop p cep[ok]
+
+se nota salva mas impressao nao acontece:   
+    desmarca checkbox mas volta a editar a mesma nota fiscal - adicionar indice e descartar nota#
+        se tenta imprimir e se torna consultar situação, acontece 2x o desmarcar checkbox,
+        e a nota é carregada pra frente - checar a função de desmarcar checkbox
+
+    nf nao processada se torna esperando processamento
+
+    entao:
+    se der erro, apotar index +1 antes de repetir o looping
+    usar caso exception e
+
+
+
+
+
+tempo de execução/espera para imprimir quando tem erro
+    Campo de destino encontrado.
+Erro ao processar o item: Message: invalid element state
+
+Tentando salvar as alterações na nota...
+
+Tentando salvar as alterações na nota...
+Ocorreu um erro inesperado: Message:
+Tentando salvar as alterações na nota...
+Ocorreu um erro inesperado: Message:
+Ocorreu um erro inesperado: Message:
+
+Tentando cancelar o processo...
+Erro ao cancelar o processo: Message:
+
+Desmarcando a checkbox 2...
+Checkbox 2 desmarcada.
+Tentando selecionar a checkbox 3...
+Checkbox selecionada com sucesso.
+
+Tentando salvar as alterações na nota...
+Alterações na nota salvas com sucesso.
+Verificando mensagem de erro após salvar a nota...
+Mensagem de erro detectada: Não foi possível salvar a Nota Fiscal
+Erro ao verificar mensagem de erro: cannot access local variable 'index' where it is not associated with a value
+Tentando enviar a nota salva
+Erro ao enviar a nota: Message: 
