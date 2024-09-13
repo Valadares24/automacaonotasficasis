@@ -11,7 +11,7 @@ def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9223")
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
         print("Driver iniciado com sucesso.")
         return driver
@@ -19,7 +19,14 @@ def iniciar_driver():
         print(f"Erro ao iniciar o driver do Chrome: {e}")
         return None
 
-#def status_check(driver, xpath):
+def status_check(driver):
+    situacaonf_xpath = "/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[1]/td[5]/span[2]/span"
+    situacaonf_status = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, situacaonf_xpath)))
+    situacao = situacaonf_status.get_attribute("value")
+    situacao_retornada = status_check(driver)
+    return situacao, situacao_retornada
+
+time.sleep(2)
 
 
 def selecionar_checkbox_e_campo(driver, index):
@@ -286,7 +293,7 @@ def emitir_nota_fiscal(driver, index):
         print(f"Erro ao enviar a nota: {e}")
 
     try:
-        time.sleep(1)
+        time.sleep(2.5)
         print("Tentando imprimir a nota salva")
         botao_imprimir_nota_xpath = '/html/body/div[28]/div[3]/div/button'#enviar selecionado2
         botao_imprimir_nota = WebDriverWait(driver, 40).until(
