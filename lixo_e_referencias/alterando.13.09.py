@@ -81,7 +81,7 @@ def clicar_no_item(driver, xpath):#clica no item dentro da lista criada abaixo (
     except Exception as e:
         print(f"Erro ao clicar no elemento com ActionChains: {e}")
 
-def processar_itens_nota(driver, cfop):#detectar itens da nota fiscal
+def processar_itens_nota(driver, cfop, index):#detectar itens da nota fiscal
     #deslocar para itens
     # pepara para executar bloco de tratamento de item na nota
     item_xpaths = [
@@ -120,12 +120,12 @@ def processar_itens_nota(driver, cfop):#detectar itens da nota fiscal
             #função clique no item chamada recursivamente - replicar para outros blocos que preciso acionar
             
             # Processar o item
-            processar_item(driver, cfop, item_xpath)#chamada recursivamente - identação/função definida posteriormente
+            processar_item(driver, cfop, item_xpath, index)#chamada recursivamente - identação/função definida posteriormente
         except Exception as e:
             print(f"Item não encontrado ou não clicável: {e}")
             break  # Se um item não for encontrado, sai do loop e continua o processamento
 
-def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso 
+def processar_item(driver, cfop, item_xpath, index):#objetos(?) definido para uso 
     try:#executa as trasnformaçõe dentro dos itens da nota fiscal
         #selecionar item 
 
@@ -187,14 +187,9 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
         #time.sleep(1)
         #cancela a emissao dessa nota
         print("cancelando processo emissão nota...")#log return cancelar emissao
-        botao_cancelar_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[2]/button'#define botao cancelar xpath
-        botao_cancelar = WebDriverWait(driver, 40).until(#espera até 10 sec para pressionar botao
-            EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath)))#EC - entender essa sintaxe
-        actions = ActionChains(driver)#actionchains para selecionar de forma eficaz - buscar forma mais eficiente(tempo)
-        actions.move_to_element(botao_cancelar).click().perform()#move cursor e pressiona botao
-        print("Processo cancelado.")#log return processo cancelado
-        #time sleep removido, foco n o webdriver wait
-        #AVALIAR FUNÇÃO PARA CENARIO DE ERRO GERAL E VERIFICAR POSSIBILIDADE SUBSTITUIR TODO ESSA LOGICA DO BLOCO EXCEPT PELA FUNÇÃO JÁ CRIADA
+        salvar_alteracoes_item(driver)
+        cancelar_processo(driver)
+        desmarcar_checkbox_atual(driver, index)#alterado
         
         
 def salvar_alteracoes_item(driver):
@@ -211,7 +206,7 @@ def salvar_alteracoes_item(driver):
         time.sleep(1)
     except Exception as e:
         print(f"Erro ao salvar as alterações no item da nota: {e}")
-
+        
 def processar_nota_fiscal(driver, index):
     #define cfop e cep, salva nota e verifica erro
     try:
@@ -231,7 +226,7 @@ def processar_nota_fiscal(driver, index):
         #time.sleep(1)
 
         # Processar itens da nota fiscal
-        processar_itens_nota(driver, cfop)
+        processar_itens_nota(driver, cfop, index)#aqui ja tem tratamtno de erro incluso?
 
         print("Tentando salvar as alterações na nota...")
         botao_salvar_nota_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[3]/button'
@@ -247,6 +242,7 @@ def processar_nota_fiscal(driver, index):
             cancelar_processo(driver)
             desmarcar_checkbox_atual(driver, index)
             return True, index + 1
+        
         else:
             emitir_nota_fiscal(driver, index)
             return False, index
@@ -309,27 +305,26 @@ def emitir_nota_fiscal(driver, index):
 
         while True:  # Loop infinito até que a condição seja satisfeita
             print('Entramos no bloco de verificação')
-            if 'Notas fiscais eletrônicas autorizadas com sucesso' in mensagem_verificar or 'Não há nada para ser feito' in mensagem_verificar:
-                actions = ActionChains(driver)
-                actions.move_to_element(botao_imprimir_final).click().perform()
-                print('Sucesso na emissão')
-                time.sleep(1)
-                break  # Sai do loop se a condição for satisfeita
-
-            elif 'Notas fiscais eletrônicas não foram validadas' in mensagem_verificar:
+            if 'Notas fiscais eletrônicas não foram validadas' in mensagem_verificar:
                 print('Emissão não concluída')
                 botao_erro_nota_xpath = '/html/body/div[28]/div[3]/div/button'
                 botao_enviar_nota = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
                 actions = ActionChains(driver)
                 actions.move_to_element(botao_enviar_nota).click().perform()
                 time.sleep(2)
-                
+
+                break
+
+            else:
+                actions = ActionChains(driver)
+                actions.move_to_element(botao_imprimir_final).click().perform()
+                print('Sucesso na emissão')
+                time.sleep(1)
+                break  # Sai do loop se a condição for satisfeita
                
                 # Você pode atualizar ou verificar a 'mensagem_verificar' novamente aqui
                 mensagem_verificar = driver.find_element(By.XPATH, "xpath_da_mensagem").text  # Supondo que você tenha um XPath para a mensagem
-            else:
-                print("Nenhuma das condições foi satisfeita, tentando novamente...")
-                time.sleep(2)  # Espera um tempo antes de tentar novamente
+           
 
 #xpath pra encerrar a impressao /html/body/div[28]/div[3]/div/button
     except Exception as e:
@@ -354,7 +349,7 @@ def cancelar_processo(driver):
     try:
         print("Tentando cancelar o processo...")
         botao_cancelar_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[2]/button'
-        botao_cancelar = WebDriverWait(driver, 10).until(
+        botao_cancelar = WebDriverWait(driver, 40).until(
             EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath))
         )
         actions = ActionChains(driver)
@@ -363,14 +358,9 @@ def cancelar_processo(driver):
     except Exception as e:
         print(f"Erro ao cancelar o processo: {e}")
 
-
-def existem_mais_notas_fiscais(driver, index):
-    """
-    Verifica se a nota fiscal na posição 'index' existe.
-    Retorna True se a nota existir e False se não existir.
-    """
+def existem_mais_notas_fiscais(driver):
     try:
-        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
+        checkbox_xpath = '/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[1]/td[1]/div/label'
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, checkbox_xpath))
         )
@@ -385,43 +375,25 @@ def print_summary(success_count, error_count):
 def main():
     driver = iniciar_driver()
     if driver is not None:
+        #processar_nota_fiscal(driver, 1)#novo
         driver.get("https://www.bling.com.br/notas.fiscais.php#list")  # Abrir a página específica
         success_count = 0
         error_count = 0
         index = 1
-        notas_inexistentes_consecutivas = 0  # Contador de notas inexistentes consecutivas
-
         while True:
             try:
-                # Verificar se a nota existe
-                if not existem_mais_notas_fiscais(driver, index):
-                    notas_inexistentes_consecutivas += 1
-                    print(f"Nota fiscal {index} não encontrada. Notas inexistentes consecutivas: {notas_inexistentes_consecutivas}")
-                    
-                    # Se duas notas consecutivas não existirem, encerrar o script
-                    if notas_inexistentes_consecutivas >= 2:
-                        print("Duas notas consecutivas não existem. Encerrando o script.")
-                        break
-                    
-                    index += 1  # Tentar a próxima nota
-                    continue
-                
-                # Se a nota for encontrada e processada, resetar o contador de notas inexistentes
-                notas_inexistentes_consecutivas = 0
+                if not existem_mais_notas_fiscais(driver):
+                    break
                 erro, proximo_index = processar_nota_fiscal(driver, index)
-                
                 if erro:
                     error_count += 1
                 else:
                     success_count += 1
-                
                 index = proximo_index
-
             except Exception as e:
                 print(f"Ocorreu um erro ao processar a nota fiscal {index}: {e}")
                 error_count += 1
                 index += 1
-        
         print_summary(success_count, error_count)
         driver.quit()
     else:

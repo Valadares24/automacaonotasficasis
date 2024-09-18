@@ -16,32 +16,80 @@ se nota salva mas impressao nao acontece:
 
 
 
+12/09/2024
+    review logico do script:
+    // driver init [ok]
+    // select nf - recall driver e gera index [apontar index update corretamente]
+        detecta index variavel pelo xpath
+    // determina cfop[ok]
+    // desmacar checkbox[corrigir mal funcionamento]
+        desmarca checkbox do indice atual da nota definido pelo xpath
+        clica checkbox indice atual
+        --- erro nao nitido na função, possivelmente na chamada dela---
+    // clicar no item [nome função burro - explicitar melhor que clica no item dentro da lista criada pa itens na nota]
+    // processar itens nota[ok]
+        repara que dentro dos itens chama driver e cfop - verificar logica para chamar index em caso de erro se preciso
+        chama dentro da função // clicar no item
+        chama //processar item - verificar consistencia dessa função com cuidado
+    //processar item (driver, cfop, itemxpath - possivel add index)
+        sem erros explicitos nas etapas de processamento da nota
+        adicionar esperas implicitas e expplicitas para melhorar desempenho - foco cliques & botoes
+        EXCEPT PARA TRATAR CASO DE EXCESSAO DAS ETAPAS DO PROCESSAMENTO
+            except sem nenhuma condição específica, basta erro
+            enteder o que é o exception as {e} <----------------
+            substituir todo o tratamento pelas funcoes responsaveis por cancelamento e desmarcar checkbox
+                salvar alteracao item nota
+                cancelar processamento nota
+                desmarcar checkboix nota
+                index +1 
+                restart process
+    //processar nota fiscal [!!!!!!!!!!!! comparar redundancia e necessidade frente a função anterior]
+        possivel juntar junto com a função anterior<-----------------------
+        chama //selecionar nf
+        chama a coleta do cep p cfop de fato
+            avaliar a possibilidade de tirar a captura do cep do topo
+        chama //processar itens nota(executa de fato todas as alterações do item da nota e aponta p caso de excessão[verificar saída p excessão])
+        efetua de fato o salvamento das alteracoes na nota em si
+        verifica se houve erro no salvamento da nota
+        se teve erro no salvemento - verificar erro salvamento(driver):
+        chama //cancelar processo(driver)
+        chama //desmarcar checkbox(driver, index)
+        return TRUE, index +1 <---- se a função verifricar erro for chamada(True) entao cancela, desmarca, index+1<--------- VERIFICAR FUN ERRO
+        se n, chama //emitir nf(driver , index)
+        False p função erro, index retorna(atual)
+    //emitir_nota_fiscal(driver, index--n ta em uso ver motivo)
+        envia nota por aquele botao
+        espera até 40 sec, n é pra dar erro aqui
+        time sleep 2.5(melhorar logica com espera explicita ou implicita p tirar esse timer)
+        manda nota impressao 
+        chama outro TRY <--- melhore esta parte
 
+    //verificar_erro_salvamento(driver)
+        analisa mensagem de erro apos tentar salvar a nota fiscal
+        
+    //cancelar_processo
+        aperta botao cancelar nota <-- verificar qual botao estamos apertando novamente
+    //exixtem mais notas fiscais(driver)
+        atualmente verifica primera nf, aponntar para proxima nf
 
-tempo de execução/espera para imprimir quando tem erro
-    Campo de destino encontrado.
-Erro ao processar o item: Message: invalid element state
-
-Tentando salvar as alterações na nota...
-
-Tentando salvar as alterações na nota...
-Ocorreu um erro inesperado: Message:
-Tentando salvar as alterações na nota...
-Ocorreu um erro inesperado: Message:
-Ocorreu um erro inesperado: Message:
-
-Tentando cancelar o processo...
-Erro ao cancelar o processo: Message:
-
-Desmarcando a checkbox 2...
-Checkbox 2 desmarcada.
-Tentando selecionar a checkbox 3...
-Checkbox selecionada com sucesso.
-
-Tentando salvar as alterações na nota...
-Alterações na nota salvas com sucesso.
-Verificando mensagem de erro após salvar a nota...
-Mensagem de erro detectada: Não foi possível salvar a Nota Fiscal
-Erro ao verificar mensagem de erro: cannot access local variable 'index' where it is not associated with a value
-Tentando enviar a nota salva
-Erro ao enviar a nota: Message: 
+    //////////main///////////
+    inicia driver
+        se driver iniciado
+            pega site notas
+            sucesso em 0
+            erro em 0
+            index começa em 1
+            enquanto driver ativo
+                verifica se existem mais notas(configurado pra checar a primeira nf)
+                quebralaço se verificar e n achar
+                atualmente so quebra o laço se sair da pg
+            se der erro(deve ter ligação com exception e)<----------
+                erro count =+1
+            se n:
+            sucesso =+1
+            exception {e}:
+            retorna qual nota deu errado
+            erro =+1
+            index += 1
+        print a contagem erro acerto
+        
