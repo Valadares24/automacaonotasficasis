@@ -263,8 +263,7 @@ def emitir_nota_fiscal(driver, index):
         print("enviando nota salva p impressao")#botao de enviar nota
         botao_enviar_nota_xpath = '/html/body/div[6]/div[8]/div[3]/div[2]/div/div[1]/button[1]/span[2]'
         botao_enviar_nota = WebDriverWait(driver, 40).until(
-            EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath))
-        )
+            EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_enviar_nota).click().perform()
         print("Nota enviada com sucesso.")
