@@ -11,13 +11,15 @@ def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9223")
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
         print("Driver iniciado com sucesso.")
         return driver
     except Exception as e:
         print(f"Erro ao iniciar o driver do Chrome: {e}")
         return None
+'''ports = [9222, 9223, 9244]
+drivers = [iniciar_driver(port) for port in ports]'''
 
 #def status_check(driver, xpath):
 
@@ -26,8 +28,8 @@ def selecionar_checkbox_e_campo(driver, index):
       
     try:
         print(f"Tentando selecionar a checkbox {index}...")
-        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'#teste rodar notas do fim da pg- mts consultar situação
-        campo_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
+        checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{6}]/td[1]/div/label'#teste rodar notas do fim da pg- mts consultar situação
+        campo_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{6}]/td[4]'
         checkbox = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
@@ -57,7 +59,7 @@ def desmarcar_checkbox_atual(driver, index):#redundancia mais p baixo no codigo
     try:
         print(f"Desmarcando a checkbox {index}...")
         checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
-        checkbox = WebDriverWait(driver, 10).until(
+        checkbox = WebDriverWait(driver, 40).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
         actions = ActionChains(driver)
@@ -263,8 +265,7 @@ def emitir_nota_fiscal(driver, index):
         print("enviando nota salva p impressao")#botao de enviar nota
         botao_enviar_nota_xpath = '/html/body/div[6]/div[8]/div[3]/div[2]/div/div[1]/button[1]/span[2]'
         botao_enviar_nota = WebDriverWait(driver, 40).until(
-            EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath))
-        )
+            EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_enviar_nota).click().perform()
         print("Nota enviada com sucesso.")
@@ -337,14 +338,32 @@ def emitir_nota_fiscal(driver, index):
             
 def verificar_erro_salvamento(driver):
     try:
+        time.sleep(1)
         print("Verificando mensagem de erro após salvar a nota...")
         mensagem_erro_xpath = '//*[@id="mensagem"]/p[1]'
-        mensagem_erro = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))
-        ).text
+        mensagem_erro = WebDriverWait(driver, 40).until(
+            EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))).text
+        print(mensagem_erro)
+        erro_municipio_xpath = '/html/body/div[6]/div[2]/form/div/div/div[3]/div/ul/li[1]'
+        erro_municipio = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, erro_municipio_xpath))).text
+        print(erro_municipio)
+        botao_editar_minicipio_xpath = '/html/body/div[6]/div[2]/form/div/div/div[25]/div[1]/span/a[2]'
+        botao_editar_minicipio = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_editar_minicipio_xpath)))
+        #botao_buscar_cep_xpath = '/html/body/div[28]/form/div[3]/div/div[1]/div/a/i'
+        #botao_buscar_cep = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_buscar_cep_xpath)))        
+        #botao_salvar_endereco_xpath = '/html/body/div[28]/div[2]/div/button'
+        #botao_salvar_endereco = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH,  botao_salvar_endereco_xpath)))        
+
         if "Não foi possível salvar a Nota Fiscal" in mensagem_erro:
             print("Mensagem de erro detectada: Não foi possível salvar a Nota Fiscal")
-            return True
+            if "O valor do campo município não foi encontrado no sistema" in erro_municipio:
+                actions = ActionChains(driver)
+                actions.move_to_element(botao_editar_minicipio).click().perform()
+                print('abrindo campo de cadastro do cliente')
+                #actions = ActionChains(driver)
+                #actions.move_to_element(botao_buscar_cep).click().perform()
+                #print('atualização de municipio compo estacompleta')
+                return True
         return False
     except Exception as e:
         print(f"Erro ao verificar mensagem de erro: {e}")
@@ -381,6 +400,7 @@ def existem_mais_notas_fiscais(driver, index):
 def print_summary(success_count, error_count):
     print(f"Notas Fiscais emitidas com sucesso: {success_count}")
     print(f"Notas Fiscais com erros: {error_count}")
+
 
 def main():
     driver = iniciar_driver()
