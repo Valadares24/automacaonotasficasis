@@ -5,14 +5,20 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import time
+
+servico = Service(ChromeDriverManager().install())#autoupdate chromedriver
+navegador = webdriver.Chrome(service=servico)#receber atualizacao pela versao do navegador
 
 def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
-        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
+        driver.get("https://www.bling.com.br/notas.fiscais.php#list")
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         print("Driver iniciado com sucesso.")
         return driver
     except Exception as e:
@@ -32,7 +38,7 @@ def selecionar_checkbox_e_campo(driver, index):
         global campo_situacao
         global status_campo_situacao
 
-        campo_situacao_xpath = '/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr/td[5]/span[2]/span'
+        campo_situacao_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
         campo_situacao = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_situacao_xpath)))
         status_campo_situacao = campo_situacao.text
@@ -40,7 +46,7 @@ def selecionar_checkbox_e_campo(driver, index):
         #print(f"Tentando selecionar a checkbox {index}...")
 
         try:
-            print(status_campo_situacao)
+            print(f'status da nota fiscal atual:{status_campo_situacao}''\n')
         
             if  status_campo_situacao != "Pendente":
                 return False, index + 1
@@ -61,6 +67,7 @@ def selecionar_checkbox_e_campo(driver, index):
                 )
                 actions.move_to_element(campo).click().perform()
                 print("Campo associado selecionado com sucesso.")
+                return True
         except Exception as e:
             print(f"Erro ao selecionar a checkbox ou campo: {e}")
             raise e
@@ -256,72 +263,75 @@ def salvar_alteracoes_item(driver):
 
 def processar_nota_fiscal(driver, index):
     #define cfop e cep, salva nota e verifica erro
-    try:
-        selecionar_checkbox_e_campo(driver, index)
-        #time.sleep(1)
-        #da utilidade pra variavel do cep só aqui
-        print("Iniciando a captura do CEP...")
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        cep_xpath = '/html/body/div[6]/div[2]/form/div/div/div[30]/div/input'
-        cep_field = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, cep_xpath))
-        )
-        time.sleep(1)
-        cep_text = cep_field.get_attribute("value")
-        cfop = determinar_cfop(cep_text)
-        print(f"Valor de CFOP determinado: {cfop}")
-        #time.sleep(1)
+    #try:
+        nota_selecionada = selecionar_checkbox_e_campo(driver, index)
+        if nota_selecionada:
+            selecionar_checkbox_e_campo(driver, index)
+            #time.sleep(1)
+            #da utilidade pra variavel do cep só aqui
+            print("Iniciando a captura do CEP...")
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            cep_xpath = '/html/body/div[6]/div[2]/form/div/div/div[30]/div/input'
+            cep_field = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, cep_xpath))
+            )
+            time.sleep(1)
+            cep_text = cep_field.get_attribute("value")
+            cfop = determinar_cfop(cep_text)
+            print(f"Valor de CFOP determinado: {cfop}")
+            #time.sleep(1)
 
-        # Processar itens da nota fiscal
-        processar_itens_nota(driver, cfop)
+            # Processar itens da nota fiscal
+            processar_itens_nota(driver, cfop)
 
-        salvar_alteracoes_nota(driver)
-        time.sleep(1.5)
-
-        if verificar_erro_salvamento(driver):
-            print("Erro detectado após salvar a nota.")
-            cancelar_processo(driver)
-            desmarcar_checkbox_atual(driver, index)
-            return True, index + 1
-        else:
-            emitir_nota_fiscal(driver, index)
-            return False, index
-        '''if verificar_erro_salvamento(driver):
-            if funcao_erro_municipio(driver):
-                print('o script veio para cá - erro municipio')
-                emitir_nota_fiscal(driver, index)
-                 #verificar_erro_salvamento(driver):
-                print('Erro de município persiste após tentativa de correção')
-                raise Exception('Erro não corrigido no município')
-                return False, index
-            
-            else:
-                print('o script veio para cá')
-                print("Erro detectado após salvar a nota.")
-                cancelar_processo(driver)
-                desmarcar_checkbox_atual(driver, index)
-                return True, index + 1
-                
-             emitir_nota_fiscal(driver, index)
-                return False, index
-            
-            except:
-                print('o script veio para cá')
-                print("Erro detectado após salvar a nota.")
-                cancelar_processo(driver)
-                desmarcar_checkbox_atual(driver, index)
-                return True, index + 1
-        else:
-            print('script nao veio para nenhum caso de erro')
             salvar_alteracoes_nota(driver)
-            emitir_nota_fiscal(driver, index)
-            return False, index'''
+            time.sleep(1.5)
 
-    except Exception as e:
-        print(f"Ocorreu um erro inesperado: {e}")
-        cancelar_processo(driver)
-        desmarcar_checkbox_atual(driver, index)
-        return True, index + 1
+            if verificar_erro_salvamento(driver):
+                print("Erro detectado após salvar a nota.")
+                cancelar_processo(driver)
+                desmarcar_checkbox_atual(driver, index)
+                return True, index + 1
+            else:
+                emitir_nota_fiscal(driver, index)
+                return False, index
+            '''if verificar_erro_salvamento(driver):
+                if funcao_erro_municipio(driver):
+                    print('o script veio para cá - erro municipio')
+                    emitir_nota_fiscal(driver, index)
+                    #verificar_erro_salvamento(driver):
+                    print('Erro de município persiste após tentativa de correção')
+                    raise Exception('Erro não corrigido no município')
+                    return False, index
+                
+                else:
+                    print('o script veio para cá')
+                    print("Erro detectado após salvar a nota.")
+                    cancelar_processo(driver)
+                    desmarcar_checkbox_atual(driver, index)
+                    return True, index + 1
+                    
+                emitir_nota_fiscal(driver, index)
+                    return False, index
+                
+                except:
+                    print('o script veio para cá')
+                    print("Erro detectado após salvar a nota.")
+                    cancelar_processo(driver)
+                    desmarcar_checkbox_atual(driver, index)
+                    return True, index + 1
+            else:
+                print('script nao veio para nenhum caso de erro')
+                salvar_alteracoes_nota(driver)
+                emitir_nota_fiscal(driver, index)
+                return False, index'''
+        else:
+            print('nota fiscal nao selecionada e pulada')
+    #except Exception as e:
+     #   print(f"Ocorreu um erro inesperado: {e}")
+      #  cancelar_processo(driver)
+       # desmarcar_checkbox_atual(driver, index)
+        #return True, index + 1
 
 def emitir_nota_fiscal(driver, index):
     print(f'o index atual é {index}')
@@ -392,7 +402,7 @@ def emitir_nota_fiscal(driver, index):
                 return False, index +1
                 
                 # Você pode atualizar ou verificar a 'mensagem_verificar' novamente aqui
-                mensagem_verificar = driver.find_element(By.XPATH, "xpath_da_mensagem").text  # Supondo que você tenha um XPath para a mensagem
+                #mensagem_verificar = driver.find_element(By.XPATH, "xpath_da_mensagem").text  # Supondo que você tenha um XPath para a mensagem
             else:
                 print("Nenhuma das condições foi satisfeita, tentando novamente...")
                 time.sleep(2)  # Espera um tempo antes de tentar novamente
