@@ -5,20 +5,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 import time
-
-servico = Service(ChromeDriverManager().install())#autoupdate chromedriver
-navegador = webdriver.Chrome(service=servico)#receber atualizacao pela versao do navegador
 
 def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
         driver = webdriver.Chrome(options=chrome_options)
-        driver.get("https://www.bling.com.br/notas.fiscais.php#list")
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        driver = webdriver.Chrome(options=chrome_options)
         print("Driver iniciado com sucesso.")
         return driver
     except Exception as e:
