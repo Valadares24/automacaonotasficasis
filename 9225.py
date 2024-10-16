@@ -5,13 +5,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+import pandas as pd
 import time
 
 def iniciar_driver():
     try:
         print("Iniciando o driver do Chrome...")
         chrome_options = Options()
-        driver = webdriver.Chrome(options=chrome_options)
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
         driver = webdriver.Chrome(options=chrome_options)
         print("Driver iniciado com sucesso.")
@@ -23,8 +23,6 @@ def iniciar_driver():
 lista_erros = []
 #def contador_erros(driver):
     
-
-
 def selecionar_checkbox_e_campo(driver, index):
 
     try:
@@ -34,7 +32,7 @@ def selecionar_checkbox_e_campo(driver, index):
         global status_campo_situacao
 
         campo_situacao_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
-        campo_situacao = WebDriverWait(driver, 10).until(
+        campo_situacao = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, campo_situacao_xpath)))
         status_campo_situacao = campo_situacao.text
         
@@ -50,14 +48,14 @@ def selecionar_checkbox_e_campo(driver, index):
                 print(f"Tentando selecionar a checkbox {index}...")
                 checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
                 campo_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
-                checkbox = WebDriverWait(driver, 10).until(
+                checkbox = WebDriverWait(driver, 50).until(
                     EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
                 )
                 actions = ActionChains(driver)
                 actions.move_to_element(checkbox).click().perform()
                 print("Checkbox selecionada com sucesso.")
                 time.sleep(.5)
-                campo = WebDriverWait(driver, 10).until(
+                campo = WebDriverWait(driver, 50).until(
                     EC.element_to_be_clickable((By.XPATH, campo_xpath))
                 )
                 actions.move_to_element(campo).click().perform()
@@ -86,7 +84,7 @@ def desmarcar_checkbox_atual(driver, index):#redundancia mais p baixo no codigo
     try:
         print(f"Desmarcando a checkbox {index}...")
         checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
-        checkbox = WebDriverWait(driver, 10).until(
+        checkbox = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
         )
         actions = ActionChains(driver)
@@ -100,7 +98,7 @@ def clicar_no_item(driver, xpath):#clica no item dentro da lista criada abaixo (
     print(f"Executando clicar_no_item com XPath: {xpath}")
     
     try:
-        elemento = WebDriverWait(driver, 10).until(
+        elemento = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
         print(f"Elemento com XPath {xpath} está clicável.")
@@ -130,7 +128,7 @@ def processar_itens_nota(driver, cfop):#detectar itens da nota fiscal
 
     for item_xpath in item_xpaths:#para cada item na lista de itens
         try:
-            item_element = WebDriverWait(driver, 10).until(#item localizado e selecionado dentro da lista criada anteriormente
+            item_element = WebDriverWait(driver, 50).until(#item localizado e selecionado dentro da lista criada anteriormente
                 EC.presence_of_element_located((By.XPATH, item_xpath))
             )
             print(f"Item encontrado: {item_xpath}")
@@ -159,7 +157,7 @@ def processar_itens_nota(driver, cfop):#detectar itens da nota fiscal
     global status_campo_situacao
 
     campo_situacao_xpath = '/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr/td[5]/span[2]/span'
-    campo_situacao = WebDriverWait(driver, 10).until(
+    campo_situacao = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, campo_situacao_xpath))).text
     print(status_campo_situacao)
     status_campo_situacao = campo_situacao.get_attribute("value")
@@ -178,14 +176,14 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
 
         # Apagar desconto
         campo_apagar_xpath = '//*[@id="edValorDescontoItem"]'#xpath do campo de desconto
-        campo_apagar = WebDriverWait(driver, 10).until(#espera até 10 sec p campo ficar disponivel e clica
+        campo_apagar = WebDriverWait(driver, 50).until(#espera até 10 sec p campo ficar disponivel e clica
             EC.presence_of_element_located((By.XPATH, campo_apagar_xpath)))
         campo_apagar.clear()#apaga valor do campo
         print("Desconto apagado.")#log de retorno pra ação bem sucedida
 
         #copiar codigo origem item
         copiar_codigo_origem_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'#xpath campo copiar codigo produto
-        campo_origem = WebDriverWait(driver, 10).until(#espera até 10 sec campo ficar disponivel
+        campo_origem = WebDriverWait(driver, 50).until(#espera até 10 sec campo ficar disponivel
             EC.presence_of_element_located((By.XPATH, copiar_codigo_origem_xpath)))
         print("Campo de origem encontrado.")#log return
         copiacodigo = campo_origem.get_attribute("value")#copia valor 
@@ -193,7 +191,7 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
 
         #define campo de destino do codigo do produto
         campo_destino_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[1]/input[2]'#xpath campo colar codigo produto
-        campo_destino = WebDriverWait(driver, 10).until(#espera até 10 sec campo ficar disponivel
+        campo_destino = WebDriverWait(driver, 50).until(#espera até 10 sec campo ficar disponivel
             EC.presence_of_element_located((By.XPATH, campo_destino_xpath)))
         print("Campo de destino encontrado.")#log return
         campo_destino.clear()#ação apagar valor
@@ -206,7 +204,7 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
         time.sleep(1)
         
         campo_cfop_xpath = '/html/body/div[28]/form/div/div/div/div[3]/div[9]/input'#define campo cfop para colar
-        campo_cfop = WebDriverWait(driver, 10).until(#espera até 10 sec campo disponível
+        campo_cfop = WebDriverWait(driver, 50).until(#espera até 10 sec campo disponível
             EC.presence_of_element_located((By.XPATH, campo_cfop_xpath)))
         campo_cfop.clear()#apaga valor presente
         campo_cfop.send_keys(str(cfop))#envia valor armazenado variavel
@@ -225,7 +223,7 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
         #cancela a emissao dessa nota
         print("cancelando processo emissão nota...")#log return cancelar emissao
         botao_cancelar_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[2]/button'#define botao cancelar xpath
-        botao_cancelar = WebDriverWait(driver, 10).until(#espera até 10 sec para pressionar botao
+        botao_cancelar = WebDriverWait(driver, 50).until(#espera até 10 sec para pressionar botao
             EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath)))#EC - entender essa sintaxe
         actions = ActionChains(driver)#actionchains para selecionar de forma eficaz - buscar forma mais eficiente(tempo)
         actions.move_to_element(botao_cancelar).click().perform()#move cursor e pressiona botao
@@ -236,7 +234,7 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
 def salvar_alteracoes_nota(driver):
     print("Tentando salvar as alterações na nota...")
     botao_salvar_nota_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[3]/button'
-    botao_salvar_nota = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_nota_xpath)))
+    botao_salvar_nota = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_nota_xpath)))
     actions = ActionChains(driver)
     actions.move_to_element(botao_salvar_nota).click().perform()
     print("Alterações na nota salvas com sucesso.")
@@ -246,7 +244,7 @@ def salvar_alteracoes_item(driver):
         time.sleep(1)
         print("Tentando salvar as alterações no item da nota...")
         botao_salvar_item_xpath = '/html/body/div[28]/div[2]/div/button'
-        botao_salvar_item = WebDriverWait(driver, 10).until(
+        botao_salvar_item = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
         )
         actions = ActionChains(driver)
@@ -267,7 +265,7 @@ def processar_nota_fiscal(driver, index):
             print("Iniciando a captura do CEP...")
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             cep_xpath = '/html/body/div[6]/div[2]/form/div/div/div[30]/div/input'
-            cep_field = WebDriverWait(driver, 10).until(
+            cep_field = WebDriverWait(driver, 50).until(
                 EC.presence_of_element_located((By.XPATH, cep_xpath))
             )
             time.sleep(1)
@@ -334,7 +332,7 @@ def emitir_nota_fiscal(driver, index):
         time.sleep(2.5)
         print("enviando nota salva p impressao")#botao de enviar nota
         botao_enviar_nota_xpath = '/html/body/div[6]/div[8]/div[3]/div[2]/div/div[1]/button[1]/span[2]'
-        botao_enviar_nota = WebDriverWait(driver, 10).until(
+        botao_enviar_nota = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_enviar_nota).click().perform()
@@ -347,7 +345,7 @@ def emitir_nota_fiscal(driver, index):
         time.sleep(2.5)
         print("Pressionar botao para imprimir a nota salva")
         botao_imprimir_nota_xpath = '/html/body/div[28]/div[3]/div/button'#enviar selecionado2
-        botao_imprimir_nota = WebDriverWait(driver, 10).until(
+        botao_imprimir_nota = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
         )
         actions = ActionChains(driver)
@@ -365,14 +363,14 @@ def emitir_nota_fiscal(driver, index):
             # Obtém o elemento e extrai o texto
         
         mensagem_verificar_xpath = '/html/body/div[28]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath))
     )
-        mensagem_verificar_element = WebDriverWait(driver, 10).until(
+        mensagem_verificar_element = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath))
         )
         botao_imprimir_final_xpath = '/html/body/div[28]/div[3]/div/button'
-        botao_imprimir_final = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
+        botao_imprimir_final = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
         mensagem_verificar = mensagem_verificar_element.text
         print(f"mensagem_verificar: {mensagem_verificar}")
         #time.sleep(2)
@@ -389,7 +387,7 @@ def emitir_nota_fiscal(driver, index):
             elif 'Notas fiscais eletrônicas não foram validadas' in mensagem_verificar:
                 print('Emissão não concluída')
                 botao_erro_nota_xpath = '/html/body/div[28]/div[3]/div/button'
-                botao_enviar_nota = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
+                botao_enviar_nota = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
                 actions = ActionChains(driver)
                 actions.move_to_element(botao_enviar_nota).click().perform()
                 time.sleep(2)
@@ -412,14 +410,14 @@ def funcao_erro_municipio(driver):
         print('executando alteracao de cadastro relacionada ao municipio')
         time.sleep(3)
         botao_editar_municipio_lapis_xpath = '/html/body/div[6]/div[2]/form/div/div/div[25]/div[1]/span/a[2]'
-        botao_editar_municipio_lapis = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_editar_municipio_lapis_xpath)))             
+        botao_editar_municipio_lapis = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, botao_editar_municipio_lapis_xpath)))             
         actions = ActionChains(driver)
         actions.move_to_element(botao_editar_municipio_lapis).click().perform()
         print(f'clicado botao de lupa endereço {botao_editar_municipio_lapis_xpath}')
         print('abrindo campo de cadastro do cliente')
 
         botao_lupa_cep_XPATH = '/html/body/div[28]/form/div[3]/div/div[1]/div/a/i'
-        botao_lupa_cep = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, botao_lupa_cep_XPATH))) 
+        botao_lupa_cep = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, botao_lupa_cep_XPATH))) 
         actions = ActionChains(driver)
         time.sleep(2)
         actions.move_to_element(botao_lupa_cep).click().perform()
@@ -428,7 +426,7 @@ def funcao_erro_municipio(driver):
         
         
         '''campo_cidade_xpath = '/html/body/div[28]/form/div[3]/div/div[3]/input[1]'
-        campo_cidade = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, campo_cidade_xpath)))
+        campo_cidade = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, campo_cidade_xpath)))
         ActionChains(driver).double_click(campo_cidade).perform()
         campo_cidade.clear()
         print('alterando campo municipio')
@@ -436,7 +434,7 @@ def funcao_erro_municipio(driver):
         campo_cidade.send_keys('s/n')'''
 
         campo_bairro_xpath = '/html/body/div[28]/form/div[3]/div/div[4]/input'
-        campo_bairro = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, campo_bairro_xpath)))
+        campo_bairro = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, campo_bairro_xpath)))
         ActionChains(driver).double_click( campo_bairro).perform()
         campo_bairro.clear()
         print('alterando campo bairro')
@@ -444,7 +442,7 @@ def funcao_erro_municipio(driver):
         campo_bairro.send_keys('s/n')
 
         campo_endereco_xpath = '/html/body/div[28]/form/div[3]/div/div[5]/input'
-        campo_endereco = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, campo_endereco_xpath)))
+        campo_endereco = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, campo_endereco_xpath)))
         ActionChains(driver).double_click(campo_endereco).perform()
         time.sleep(1)
         campo_endereco.clear()
@@ -453,7 +451,7 @@ def funcao_erro_municipio(driver):
         campo_endereco.send_keys('s/n')
 
         botao_salvar_novo_cadastro_XPATH = '/html/body/div[28]/div[2]/div/button'
-        botao_salvar_novo_cadastro = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_novo_cadastro_XPATH)))
+        botao_salvar_novo_cadastro = WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_novo_cadastro_XPATH)))
         actions = ActionChains(driver)
         print('clique botao salvar alteracoes')
         time.sleep(3)
@@ -474,18 +472,18 @@ def verificar_erro_salvamento(driver):
         time.sleep(1)
         print("Verificando mensagem de erro após salvar a nota...")
         mensagem_erro_xpath = '//*[@id="mensagem"]/p[1]'
-        mensagem_erro = WebDriverWait(driver, 10).until(
+        mensagem_erro = WebDriverWait(driver, 50).until(
         EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))).text
         print(mensagem_erro)
         erro_especifico_xpath = '/html/body/div[6]/div[2]/form/div/div/div[3]/div/ul/li[1]'
-        erro_especifico = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, erro_especifico_xpath))).text
+        erro_especifico = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, erro_especifico_xpath))).text
 
         lista_erros.append(erro_especifico)
         
         if "Não foi possível salvar a Nota Fiscal" in mensagem_erro:
             print("Mensagem de erro detectada: Não foi possível salvar a Nota Fiscal")
             #erro_especifico_xpath = '/html/body/div[6]/div[2]/form/div/div/div[3]/div/ul/li[1]'
-            #erro_especifico = WebDriverWait(driver, 10).until(
+            #erro_especifico = WebDriverWait(driver, 50).until(
             #    EC.presence_of_element_located((By.XPATH, erro_especifico_xpath))
             #).text
             print(erro_especifico)
@@ -513,7 +511,7 @@ def cancelar_processo(driver):
     try:
         print("Tentando cancelar o processo...")
         botao_cancelar_xpath = '/html/body/div[6]/div[2]/form/div/div/div[1]/div/div[2]/button'
-        botao_cancelar = WebDriverWait(driver, 10).until(
+        botao_cancelar = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath))
         )
         actions = ActionChains(driver)
@@ -529,7 +527,7 @@ def existem_mais_notas_fiscais(driver, index):
     """
     try:
         checkbox_xpath = f'/html/body/div[6]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/label'
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, checkbox_xpath))
         )
         return True
@@ -583,6 +581,8 @@ def main():
         print_summary(success_count, error_count)
         print( lista_erros)
         driver.quit()
+        df = pd.DataFrame(lista_erros, success_count, error_count)
+        df.to_excel('rel_erros_SHP.xlsx', index=False)
     else:
         print("Não foi possível iniciar o driver.")
 
