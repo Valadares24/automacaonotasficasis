@@ -607,3 +607,7 @@ Iniciando a captura do CEP...
 32672
 Valor de CFOP determinado: 6108
 deu certo
+
+
+lista_exceptions=[ConnectTimeout, requests.Timeout, requestions.connectionError, requests.exceptions.ConnectTimeout, InterruptedError
+TimeoutError]
