@@ -397,16 +397,16 @@ def emitir_nota_fiscal(driver, index):
 
             elif 'Notas fiscais eletrônicas não foram validadas' in mensagem_verificar:
                 print('Emissão não concluída')
-                botao_erro_nota_xpath = '/html/body/div[28]/div[3]/div/button'
-                botao_enviar_nota = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
+                botao_erro_nota_xpath = '/html/body/div[28]/div[1]/button'#botao mudou/deixou de existir
+                #clicar no 'x', desmarcar nota e vapo
+                #botao_enviar_nota = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, botao_erro_nota_xpath)))
                 actions = ActionChains(driver)
-                actions.move_to_element(botao_enviar_nota).click().perform()
+                actions.move_to_element(botao_erro_nota_xpath).click().perform()
                 time.sleep(2)
                 desmarcar_checkbox_atual(driver, index)
                 return False, index +1
                 
-                # Você pode atualizar ou verificar a 'mensagem_verificar' novamente aqui
-                #mensagem_verificar = driver.find_element(By.XPATH, "xpath_da_mensagem").text  # Supondo que você tenha um XPath para a mensagem
+                
             else:
                 print("Nenhuma das condições foi satisfeita, tentando novamente...")
                 time.sleep(2)  # Espera um tempo antes de tentar novamente
