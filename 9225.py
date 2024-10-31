@@ -482,7 +482,7 @@ def verificar_erro_salvamento(driver):
         time.sleep(1)
         print("Verificando mensagem de erro após salvar a nota...")
         mensagem_erro_xpath = '//*[@id="mensagem"]/p[1]'
-        mensagem_erro = WebDriverWait(driver, 10).until(
+        mensagem_erro = WebDriverWait(driver, 4).until(
         EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))).text
         print(mensagem_erro)
         erro_especifico_xpath = '/html/body/div[6]/div[2]/form/div/div/div[3]/div/ul/li[1]'
