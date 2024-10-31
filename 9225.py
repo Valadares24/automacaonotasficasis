@@ -219,7 +219,7 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
         salvar_alteracoes_item(driver)
         print("Alterações no item da nota salvas com sucesso.")#log return clicar botao salvar
 
-        time.sleep(2)
+        time.sleep(1)
         #cancela a emissao dessa nota
         print("cancelando processo emissão nota...")#log return cancelar emissao
         botao_cancelar_xpath = '/html/body/div[29]/div[2]/div/button'#define botao cancelar xpath
@@ -278,7 +278,7 @@ def processar_nota_fiscal(driver, index):
             processar_itens_nota(driver, cfop)
 
             salvar_alteracoes_nota(driver)
-            time.sleep(1.5)
+            time.sleep(1)
 
             if verificar_erro_salvamento(driver):
                 print("Erro detectado após salvar a nota.")
@@ -329,7 +329,7 @@ def processar_nota_fiscal(driver, index):
 def emitir_nota_fiscal(driver, index):
     print(f'o index atual é {index}')
     try:
-        time.sleep(2.5)
+        time.sleep(1)
         print("enviando nota salva p impressao")#botao de enviar nota
         botao_enviar_nota_xpath = '/html/body/div[6]/div[8]/div[3]/div[2]/div/div[1]/button[1]/span[2]'
         botao_enviar_nota = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_xpath)))
@@ -341,7 +341,7 @@ def emitir_nota_fiscal(driver, index):
         print(f"Erro ao enviar a nota: {e}")
 
     try:
-        time.sleep(2.5)
+        time.sleep(1)
         print("Pressionar botao para imprimir a nota salva")
         botao_imprimir_nota_xpath = '/html/body/div[28]/div[3]/div/button'#enviar selecionado2
         botao_imprimir_nota = WebDriverWait(driver, 10).until(
@@ -358,7 +358,7 @@ def emitir_nota_fiscal(driver, index):
         
     try:#check
         print('tentando bloco mensagem')
-        time.sleep(4)
+        time.sleep(2)
         print('verificar condição de encerramento')
             # Obtém o elemento e extrai o texto
         
