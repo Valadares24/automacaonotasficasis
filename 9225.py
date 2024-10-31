@@ -358,7 +358,7 @@ def emitir_nota_fiscal(driver, index):
         
     try:#check
         print('tentando bloco mensagem')
-        time.sleep(2)
+        time.sleep(1)
         print('verificar condição de encerramento')
             # Obtém o elemento e extrai o texto
         
