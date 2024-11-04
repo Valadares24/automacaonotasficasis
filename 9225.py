@@ -164,15 +164,15 @@ def processar_item(driver, cfop, item_xpath):
         print("Desconto apagado.")
 
         time.sleep(1)
-        copiar_codigo_origem_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[2]/input'#xpath campo copiar codigo produto
+        copiar_codigo_origem_ID = 'edCodigo'#seletor mudado para ID - xpath tava dando muito problema
         campo_origem = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, copiar_codigo_origem_xpath)))
+            EC.presence_of_element_located((By.ID, copiar_codigo_origem_ID)))
         print("Campo de origem encontrado.")
         copiacodigo = campo_origem.get_attribute("value")
         print(f"Texto copiado: {copiacodigo}")
 
        
-        campo_destino_xpath = '/html/body/div[28]/form/div/div/div/div[1]/div[1]/input[2]'#xpath campo colar codigo produto
+        campo_destino_xpath = '/html/body/div[29]/form/div/div/div/div[1]/div[1]/input[2]'#xpath campo colar codigo produto
         campo_destino = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_destino_xpath)))
         print("Campo de destino encontrado.")
@@ -185,7 +185,7 @@ def processar_item(driver, cfop, item_xpath):
         actions.send_keys(Keys.RETURN).perform()
         time.sleep(1)
         
-        campo_cfop_xpath = '/html/body/div[28]/form/div/div/div/div[3]/div[9]/input'
+        campo_cfop_xpath = '/html/body/div[29]/form/div/div/div/div[3]/div[9]/input'
         campo_cfop = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, campo_cfop_xpath)))
         campo_cfop.clear()
@@ -225,7 +225,7 @@ def salvar_alteracoes_item(driver):
     try:
         time.sleep(1)
         print("Tentando salvar as alterações no item da nota...")
-        botao_salvar_item_xpath = '/html/body/div[28]/div[2]/div/button'
+        botao_salvar_item_xpath = '/html/body/div[29]/div[2]/div/button'
         botao_salvar_item = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
         )
@@ -237,13 +237,11 @@ def salvar_alteracoes_item(driver):
         print(f"Erro ao salvar as alterações no item da nota: {e}")
 
 def processar_nota_fiscal(driver, index):
-    #define cfop e cep, salva nota e verifica erro
-    #try:
+    
         nota_selecionada = selecionar_checkbox_e_campo(driver, index)
         if nota_selecionada:
             selecionar_checkbox_e_campo(driver, index)
-            #time.sleep(1)
-            #da utilidade pra variavel do cep só aqui
+            
             print("Iniciando a captura do CEP...")
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             cep_xpath = '/html/body/div[6]/div[2]/form/div/div/div[30]/div/input'
@@ -320,7 +318,7 @@ def emitir_nota_fiscal(driver, index):
     try:
         time.sleep(1)
         print("Pressionar botao para imprimir a nota salva")
-        botao_imprimir_nota_xpath = '/html/body/div[28]/div[3]/div/button' 
+        botao_imprimir_nota_xpath = '/html/body/div[29]/div[3]/div/button' 
         botao_imprimir_nota = WebDriverWait(driver, 60).until(
             EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
         )
@@ -338,11 +336,9 @@ def emitir_nota_fiscal(driver, index):
         time.sleep(2)
         print('verificar condição de encerramento')
            
-        
-        
-
         while True:  
-            mensagem_verificar_xpath = '/html/body/div[28]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
+            time.sleep(5)  
+            mensagem_verificar_xpath = '/html/body/div[29]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
             print(mensagem_verificar_xpath)
                 
             WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
@@ -357,7 +353,7 @@ def emitir_nota_fiscal(driver, index):
 
 
         
-            botao_imprimir_final_xpath = '/html/body/div[28]/div[3]/div/button'
+            botao_imprimir_final_xpath = '/html/body/div[29]/div[3]/div/button'
             botao_imprimir_final = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
             
             
