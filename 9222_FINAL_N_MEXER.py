@@ -207,8 +207,6 @@ def processar_item(driver, cfop, item_xpath):#objetos(?) definido para uso
                 print(f"Checkbox {index} desmarcada.")
             except Exception as e:
                          print(f"Erro ao desmarcar checkbox: {e}")
-        
-        
 
 def salvar_alteracoes_item(driver):
     try:
@@ -358,9 +356,6 @@ def emitir_nota_fiscal(driver):
     except Exception as e:
             print(f"Erro ao validar envio: {e}") 
             
-
-
-
 def verificar_erro_salvamento(driver):
     try:
         print("Verificando mensagem de erro após salvar a nota...")
@@ -388,7 +383,6 @@ def cancelar_processo(driver):
         print("Processo cancelado.")
     except Exception as e:
         print(f"Erro ao cancelar o processo: {e}")
-
 
 def existem_mais_notas_fiscais(driver):
     try:
