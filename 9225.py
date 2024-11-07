@@ -339,7 +339,7 @@ def emitir_nota_fiscal(driver, index):
             mensagem_verificar_xpath = '/html/body/div[34]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
             print(mensagem_verificar_xpath)
                 
-            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
+            WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
 
             mensagem_verificar_element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
             print(mensagem_verificar_element)
