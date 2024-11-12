@@ -43,7 +43,7 @@ def selecionar_checkbox_e_campo(driver, index):
             if  status_campo_situacao != "Pendente":
                 return False, index + 1
             else: 
-                time.sleep(3)
+                #time.sleep(3)
                 print(f"Tentando selecionar a checkbox {index}...")
                 checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div'                 
                 campo_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
@@ -161,7 +161,7 @@ def processar_item(driver, cfop, item_xpath):
         campo_apagar.clear()
         print("Desconto apagado.")
 
-        time.sleep(1)
+        #time.sleep(1)
         copiar_codigo_origem_ID = 'edCodigo'#seletor mudado para ID - xpath tava dando muito problema
         campo_origem = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, copiar_codigo_origem_ID)))
@@ -341,7 +341,7 @@ def emitir_nota_fiscal(driver, index):
                 
             WebDriverWait(driver, 40).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
 
-            mensagem_verificar_element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
+            mensagem_verificar_element = WebDriverWait(driver, 50).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
             print(mensagem_verificar_element)
             mensagem_verificar = mensagem_verificar_element.text
             time.sleep(5)   
@@ -352,7 +352,7 @@ def emitir_nota_fiscal(driver, index):
 
         
             botao_imprimir_final_xpath = '/html/body/div[34]/div[3]/div/button'
-            botao_imprimir_final = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
+            botao_imprimir_final = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
             
             
             print(f"mensagem_verificar: {mensagem_verificar}")
