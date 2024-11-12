@@ -352,7 +352,7 @@ def emitir_nota_fiscal(driver, index):
 
         
             botao_imprimir_final_xpath = '/html/body/div[34]/div[3]/div/button'
-            botao_imprimir_final = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
+            botao_imprimir_final = WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, botao_imprimir_final_xpath)))
             
             
             print(f"mensagem_verificar: {mensagem_verificar}")
