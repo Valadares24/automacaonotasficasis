@@ -379,7 +379,7 @@ def emitir_nota_fiscal(driver, index):
                 print("Nenhuma das condições foi satisfeita - descartar nota")
                 #time.sleep(2) 
                 
-                botao_fechar_nota_xpath = "/html/body/div[34]/div[1]/button"
+                botao_fechar_nota_xpath = "/html/body/div[37]/div[1]/button"
                 botao_fechar_nota = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, botao_fechar_nota_xpath)))
                 actions = ActionChains(driver)
                 actions.move_to_element(botao_fechar_nota).click().perform()
