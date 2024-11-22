@@ -316,7 +316,7 @@ def emitir_nota_fiscal(driver, index):
         #time.sleep(1)
         print("enviando nota salva p impressao")#botao de enviar nota
         botao_enviar_nota_XPATH = '/html/body/div[7]/div[8]/div[3]/div[2]/div/div[1]/button[1]'
-        botao_enviar_nota = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_XPATH)))
+        botao_enviar_nota = WebDriverWait(driver, 100).until(EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_XPATH)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_enviar_nota).click().perform()
         print("Nota enviada com sucesso.")
@@ -328,7 +328,7 @@ def emitir_nota_fiscal(driver, index):
         time.sleep(1)
         print("Pressionar botao para imprimir a nota salva")
         botao_imprimir_nota_xpath = '/html/body/div[37]/div[3]/div/button' 
-        botao_imprimir_nota = WebDriverWait(driver, 50).until(
+        botao_imprimir_nota = WebDriverWait(driver, 100).until(
             EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
         )
         actions = ActionChains(driver)
@@ -481,7 +481,7 @@ def cancelar_processo(driver):
     try:
         print("Cancelando processo")
         botao_cancelar_xpath = '/html/body/div[7]/div[2]/form/div/div/div[1]/div/div[2]/button'
-        botao_cancelar = WebDriverWait(driver, 10).until(
+        botao_cancelar = WebDriverWait(driver, 100).until(
             EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_cancelar).click().perform()
