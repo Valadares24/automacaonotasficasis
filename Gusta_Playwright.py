@@ -1,5 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright
+import time
 
 lista_erros = []
 
@@ -8,25 +9,61 @@ async def iniciar_browser():
         print("Iniciando o navegador Playwright...")
         playwright = await async_playwright().start()
         browser = await playwright.chromium.launch(headless=False)  # `headless=False` para ver o navegador
-        context = await browser.new_context()
-        page = await context.new_page()
+        context = await browser.new_context() #nova guia
+        page = await context.new_page()#nova guia
         print("Navegador iniciado com sucesso.")
         return playwright, browser, page
     except Exception as e:
         print(f"Erro ao iniciar o navegador Playwright: {e}")
         return None, None, None
 
+async def login_bling(page):
+    try:
+
+        await page.locator("input#username").fill("financeiro@goiaspet.com.br")
+
+        await page.locator("input.InputText-input[placeholder='Insira sua senha']").fill("gp-matriz_s2-BLg")
+
+        #clicar_login_buttn
+        await page.locator("role=button[name='Entrar']").click()
+        
+        
+        print('login com sucesso')
+
+    except:
+        print('erro de login')
+    
+
+async def filtrar_notas(page):
+     
+    time.sleep(5)
+    print(await page.locator("#open-filter").is_visible())  # Retorna True ou False - log
+
+    #page.wait_for_selector("#open-filter", state="attached")  # Verifica se está no DOM
+    await page.locator("#open-filter").wait_for(state="visible")  # Verifica visibilidade
+    await page.locator("#open-filter").click(force=True)
+    print('o botao está visivel')
+
+    #page.locator(".InputDropdown-select[tabinex='0']").click(force=True)
+    page.locator("span.InputDropdown-arrow").click()
+
+
+    #time.sleep(10)
+
+
 async def selecionar_checkbox_e_campo(page, index):
     try:
         print(f"Tentando acessar checkbox e campo da nota fiscal {index}...")
-        campo_situacao_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span'
+        campo_situacao_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span'#seletor por elemento.tipo
+        print(f'status nota:{campo_situacao_selector}')
         status_campo_situacao = await page.inner_text(campo_situacao_selector)
         print(f"Status da nota fiscal {index}: {status_campo_situacao}")
 
         if status_campo_situacao != "Pendente":
             return False, index + 1
 
-        checkbox_selector = f'tr:nth-child({index}) td:nth-child(1) div input'
+        #checkbox_selector = f'tr:nth-child({index}) td:nth-child(1) div input'
+        checkbox_selector = f"tr:nth-child({index}) td.checkbox-item input[type='checkbox']"
         campo_selector = f'tr:nth-child({index}) td:nth-child(4)'
         
         await page.click(checkbox_selector)
@@ -153,6 +190,9 @@ async def main():
         return
 
     await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
+
+    await login_bling(page)
+    await filtrar_notas(page)
 
     success_count = 0
     error_count = 0
