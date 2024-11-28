@@ -46,21 +46,33 @@ def selecionar_checkbox_e_campo(driver, index):
             if  status_campo_situacao != "Pendente":
                 return False, index + 1
             else: 
-                #time.sleep(3)
-                print(f"Tentando selecionar a checkbox {index}...")
-                checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div'                 
-                campo_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
-                checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
-                
-                print(f"Checkbox localizada: tag_name={checkbox.tag_name}, location={checkbox.location}, size={checkbox.size}")
+                try:
+                    print(f"Tentando selecionar a checkbox {index}...")
+                    checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div'                          
+                    checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
+                    print(f"Checkbox localizada: tag_name={checkbox.tag_name}, location={checkbox.location}, size={checkbox.size}")
+                    actions = ActionChains(driver)
+                    actions.move_to_element(checkbox).click().perform()
+                    print("Checkbox selecionada com sucesso.")
+                except NoSuchElementException:
+                    print(f"Tentando selecionar a checkbox {index}...")
+                    checkbox_xpath = f'/html/body/div[8]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div'                          
+                    checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
+                    print(f"Checkbox localizada: tag_name={checkbox.tag_name}, location={checkbox.location}, size={checkbox.size}")
+                    actions = ActionChains(driver)
+                    actions.move_to_element(checkbox).click().perform()
+                    print("Checkbox selecionada com sucesso.")
 
-                actions = ActionChains(driver)
-                actions.move_to_element(checkbox).click().perform()
-                print("Checkbox selecionada com sucesso.")
-                
-                campo = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, campo_xpath)))
-                actions.move_to_element(campo).click().perform()
-                print("Campo associado selecionado com sucesso.")
+                try:
+                    campo_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
+                    campo = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, campo_xpath)))
+                    actions.move_to_element(campo).click().perform()
+                    print("Campo associado selecionado com sucesso.")
+                except NoSuchElementException:
+                    campo_xpath = f'/html/body/div[8]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[4]'
+                    campo = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, campo_xpath)))
+                    actions.move_to_element(campo).click().perform()
+                    print("Campo associado selecionado com sucesso.")
                 return True
             
         except Exception as e:
