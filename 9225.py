@@ -5,6 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
+
 #import pandas as pd
 #import sys
 import time
@@ -211,17 +213,30 @@ def processar_item(driver, cfop, item_xpath):
         print("Alterações no item da nota salvas com sucesso.")
 
         time.sleep(1)
-        
-        print("cancelando processo emissão nota...")
-        botao_cancelar_com_salvamento_xpath = '/html/body/div[37]/div[2]/div/button'
-        botao_cancelar = WebDriverWait(driver, 10).until(#espera até 10 sec para pressionar botao
-            EC.element_to_be_clickable((By.XPATH, botao_cancelar_com_salvamento_xpath)))#EC - entender essa sintaxe
-        actions = ActionChains(driver)#actionchains para selecionar de forma eficaz - buscar forma mais eficiente(tempo)
-        actions.move_to_element(botao_cancelar).click().perform()#move cursor e pressiona botao
-        print("Processo cancelado.")#log return processo cancelado
-        #time sleep removido, foco n o webdriver wait
-        #AVALIAR FUNÇÃO PARA CENARIO DE ERRO GERAL E VERIFICAR POSSIBILIDADE SUBSTITUIR TODO ESSA LOGICA DO BLOCO EXCEPT PELA FUNÇÃO JÁ CRIADA
-        
+
+        try:
+            print("cancelando processo emissão nota...")
+            botao_cancelar_com_salvamento_xpath = '/html/body/div[34]/div[2]/div/button'
+            botao_cancelar = WebDriverWait(driver, 10).until(#espera até 10 sec para pressionar botao
+                EC.element_to_be_clickable((By.XPATH, botao_cancelar_com_salvamento_xpath)))#EC - entender essa sintaxe
+            actions = ActionChains(driver)#actionchains para selecionar de forma eficaz - buscar forma mais eficiente(tempo)
+            actions.move_to_element(botao_cancelar).click().perform()#move cursor e pressiona botao
+            print("Processo cancelado.")#log return processo cancelado
+            #time sleep removido, foco n o webdriver wait
+            #AVALIAR FUNÇÃO PARA CENARIO DE ERRO GERAL E VERIFICAR POSSIBILIDADE SUBSTITUIR TODO ESSA LOGICA DO BLOCO EXCEPT PELA FUNÇÃO JÁ CRIADA
+        except  NoSuchElementException:
+            time.sleep(1)
+        print("Tentando salvar as alterações no item da nota...")#pipoca
+        botao_salvar_item_xpath = '/html/body/div[36]/div[2]/div/button'
+        botao_salvar_item = WebDriverWait(driver, 3).until(
+            EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_salvar_item).click().perform()
+        print("Alterações no item da nota salvas com sucesso.")
+        time.sleep(1)
+
+
 def salvar_alteracoes_nota(driver):
     print("Tentando salvar as alterações na nota...")
     botao_salvar_nota_xpath = '/html/body/div[7]/div[2]/form/div/div/div[1]/div/div[3]/button'
@@ -234,7 +249,18 @@ def salvar_alteracoes_item(driver):
     try:
         time.sleep(1)
         print("Tentando salvar as alterações no item da nota...")#pipoca
-        botao_salvar_item_xpath = '/html/body/div[37]/div[2]/div/button'
+        botao_salvar_item_xpath = '/html/body/div[34]/div[2]/div/button'
+        botao_salvar_item = WebDriverWait(driver, 3).until(
+            EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_salvar_item).click().perform()
+        print("Alterações no item da nota salvas com sucesso.")
+        time.sleep(1)
+    except NoSuchElementException:
+        time.sleep(1)
+        print("Tentando salvar as alterações no item da nota...")#pipoca
+        botao_salvar_item_xpath = '/html/body/div[36]/div[2]/div/button'
         botao_salvar_item = WebDriverWait(driver, 3).until(
             EC.element_to_be_clickable((By.XPATH, botao_salvar_item_xpath))
         )
@@ -327,7 +353,7 @@ def emitir_nota_fiscal(driver, index):
     try:
         time.sleep(1)
         print("Pressionar botao para imprimir a nota salva")
-        botao_imprimir_nota_xpath = '/html/body/div[37]/div[3]/div/button' 
+        botao_imprimir_nota_xpath = '/html/body/div[34]/div[3]/div/button' 
         botao_imprimir_nota = WebDriverWait(driver, 100).until(
             EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
         )
@@ -335,8 +361,17 @@ def emitir_nota_fiscal(driver, index):
         actions.move_to_element(botao_imprimir_nota).click().perform()
         print("Nota enviada para impressão.")
         time.sleep(1)
-         
-    
+    except NoSuchElementException:
+        time.sleep(1)
+        print("Pressionar botao para imprimir a nota salva")
+        botao_imprimir_nota_xpath = '/html/body/div[36]/div[3]/div/button' 
+        botao_imprimir_nota = WebDriverWait(driver, 100).until(
+            EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
+        )
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_imprimir_nota).click().perform()
+        print("Nota enviada para impressão.")
+        time.sleep(1)
     except Exception as e:
         print(f"Erro ao enviar a nota para impressão-: {e}")
         
@@ -347,7 +382,7 @@ def emitir_nota_fiscal(driver, index):
            
         while True:  
             time.sleep(5)  
-            mensagem_verificar_xpath = '/html/body/div[37]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
+            mensagem_verificar_xpath = '/html/body/div[34]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
             print(mensagem_verificar_xpath)
                 
             #WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
@@ -379,7 +414,7 @@ def emitir_nota_fiscal(driver, index):
                 print("Nenhuma das condições foi satisfeita - descartar nota")
                 #time.sleep(2) 
                 
-                botao_fechar_nota_xpath = "/html/body/div[37]/div[1]/button"
+                botao_fechar_nota_xpath = "/html/body/div[34]/div[1]/button"
                 botao_fechar_nota = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, botao_fechar_nota_xpath)))
                 actions = ActionChains(driver)
                 actions.move_to_element(botao_fechar_nota).click().perform()
@@ -497,8 +532,14 @@ def existem_mais_notas_fiscais(driver, index):
     try:
         checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/input'
         WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located((By.XPATH, checkbox_xpath)))
+        return True
+    except NoSuchElementException:
+        checkbox_xpath = f'/html/body/div[8]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div/input'
+        WebDriverWait(driver, 3).until(
             EC.presence_of_element_located((By.XPATH, checkbox_xpath))
         )
+        print('estamos no cenário II de caminhos dos elementos')
         return True
     except:
         return False
