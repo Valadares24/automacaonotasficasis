@@ -101,11 +101,17 @@ def desmarcar_checkbox_atual(driver, index):
         print(f"Desmarcando a checkbox {index}...")
         checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
         checkbox = WebDriverWait(driver, 3).until(
-            EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
-        )
+            EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(checkbox).click().perform()
         print(f"Checkbox {index} desmarcada.")
+    except NoSuchElementException:
+        print(f"Desmarcando a checkbox {index}...")
+        checkbox_xpath = f'/html/body/div[8]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
+        checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
+        actions = ActionChains(driver)
+        actions.move_to_element(checkbox).click().perform()
+
     except Exception as e:
         print(f"Erro ao desmarcar checkbox: {e}")
 
@@ -126,25 +132,7 @@ def clicar_no_item(driver, xpath):
 
 def processar_itens_nota(driver, cfop):
     
-    item_xpaths = [
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[1]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[2]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[3]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[4]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[5]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[6]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[7]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[8]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[9]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[10]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[11]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[12]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[13]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[14]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[15]/td[1]',
-        '/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[16]/td[1]',
-
-]
+    item_xpaths = [f'/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[{i}]/td[1]' for i in range (1,17)]
 
     for item_xpath in item_xpaths:
         try:
@@ -250,12 +238,20 @@ def processar_item(driver, cfop, item_xpath):
 
 
 def salvar_alteracoes_nota(driver):
-    print("Tentando salvar as alterações na nota...")
-    botao_salvar_nota_xpath = '/html/body/div[7]/div[2]/form/div/div/div[1]/div/div[3]/button'
-    botao_salvar_nota = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_nota_xpath)))
-    actions = ActionChains(driver)
-    actions.move_to_element(botao_salvar_nota).click().perform()
-    print("Alterações na nota salvas com sucesso.")
+    try:
+        print("Tentando salvar as alterações na nota...")
+        botao_salvar_nota_xpath = '/html/body/div[7]/div[2]/form/div/div/div[1]/div/div[3]/button'
+        botao_salvar_nota = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_nota_xpath)))
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_salvar_nota).click().perform()
+        print("Alterações na nota salvas com sucesso.")
+    except NoSuchElementException:
+        print("Tentando salvar as alterações na nota...")
+        botao_salvar_nota_xpath = '/html/body/div[8]/div[2]/form/div/div/div[1]/div/div[3]/button'
+        botao_salvar_nota = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_nota_xpath)))
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_salvar_nota).click().perform()
+        print("Alterações na nota salvas com sucesso.")
 
 def salvar_alteracoes_item(driver):
     try:
@@ -358,6 +354,14 @@ def emitir_nota_fiscal(driver, index):
         actions = ActionChains(driver)
         actions.move_to_element(botao_enviar_nota).click().perform()
         print("Nota enviada com sucesso.")
+    except NoSuchElementException:
+        #time.sleep(1)
+        print("enviando nota salva p impressao")#botao de enviar nota
+        botao_enviar_nota_XPATH = '/html/body/div[8]/div[8]/div[3]/div[2]/div/div[1]/button[1]'
+        botao_enviar_nota = WebDriverWait(driver, 100).until(EC.element_to_be_clickable((By.XPATH, botao_enviar_nota_XPATH)))
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_enviar_nota).click().perform()
+        print("Nota enviada com sucesso.")
 
     except Exception as e:
         print(f"Erro ao enviar a nota: {e}")
@@ -367,8 +371,7 @@ def emitir_nota_fiscal(driver, index):
         print("Pressionar botao para imprimir a nota salva")
         botao_imprimir_nota_xpath = '/html/body/div[34]/div[3]/div/button' 
         botao_imprimir_nota = WebDriverWait(driver, 100).until(
-            EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath))
-        )
+            EC.element_to_be_clickable((By.XPATH, botao_imprimir_nota_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_imprimir_nota).click().perform()
         print("Nota enviada para impressão.")
@@ -394,11 +397,14 @@ def emitir_nota_fiscal(driver, index):
            
         while True:  
             time.sleep(5)  
-            mensagem_verificar_xpath = '/html/body/div[34]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
-            print(mensagem_verificar_xpath)
-                
-            #WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
+            try:
+                mensagem_verificar_xpath = '/html/body/div[34]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
+                print(mensagem_verificar_xpath)
+            except NoSuchElementException:
+                mensagem_verificar_xpath = '/html/body/div[36]/div[2]/div[3]/div[2]/div/div[1]/div[1]/div/span'#aqui
+                print(mensagem_verificar_xpath)
 
+            
             mensagem_verificar_element = WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.XPATH, mensagem_verificar_xpath)))
             print(mensagem_verificar_element)
             mensagem_verificar = mensagem_verificar_element.text
@@ -425,8 +431,12 @@ def emitir_nota_fiscal(driver, index):
             else:
                 print("Nenhuma das condições foi satisfeita - descartar nota")
                 #time.sleep(2) 
-                
-                botao_fechar_nota_xpath = "/html/body/div[34]/div[1]/button"
+                try:
+                    botao_fechar_nota_xpath = "/html/body/div[34]/div[1]/button"
+                except  NoSuchElementException:
+                    botao_fechar_nota_xpath = "/html/body/div[37]/div[1]/button"
+                    
+
                 botao_fechar_nota = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, botao_fechar_nota_xpath)))
                 actions = ActionChains(driver)
                 actions.move_to_element(botao_fechar_nota).click().perform()
@@ -473,12 +483,21 @@ def funcao_erro_municipio(driver):
         print('alterando campo endereco')
         campo_endereco.send_keys('s/n')
 
-        botao_salvar_novo_cadastro_ID = 'salvar-contato-rapido'
-        botao_salvar_novo_cadastro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.ID, botao_salvar_novo_cadastro_ID)))
-        actions = ActionChains(driver)
-        print('clique botao salvar alteracoes')
-        time.sleep(3)
-        actions.move_to_element(botao_salvar_novo_cadastro).click().perform()
+        try:
+            botao_salvar_novo_cadastro_XPATH = '/html/body/div[34]/div[2]/div/button'
+            botao_salvar_novo_cadastro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_novo_cadastro_XPATH)))
+            actions = ActionChains(driver)
+            print('clique botao salvar alteracoes')
+            time.sleep(3)
+            actions.move_to_element(botao_salvar_novo_cadastro).click().perform()
+        except NoSuchElementException:
+            botao_salvar_novo_cadastro_XPATH = '/html/body/div[36]/div[2]/div/button'
+            botao_salvar_novo_cadastro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_novo_cadastro_XPATH)))
+            actions = ActionChains(driver)
+            print('clique botao salvar alteracoes')
+            time.sleep(3)
+            actions.move_to_element(botao_salvar_novo_cadastro).click().perform()
+
 
         time.sleep(3)
         salvar_alteracoes_nota(driver)
@@ -530,6 +549,13 @@ def cancelar_processo(driver):
         botao_cancelar_xpath = '/html/body/div[7]/div[2]/form/div/div/div[1]/div/div[2]/button'
         botao_cancelar = WebDriverWait(driver, 100).until(
             EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath)))
+        actions = ActionChains(driver)
+        actions.move_to_element(botao_cancelar).click().perform()
+        print("Processo cancelado.")
+    except NoSuchElementException:
+        print("Cancelando processo")
+        botao_cancelar_xpath = '/html/body/div[8]/div[2]/form/div/div/div[1]/div/div[2]/button'
+        botao_cancelar = WebDriverWait(driver, 100).until(EC.element_to_be_clickable((By.XPATH, botao_cancelar_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(botao_cancelar).click().perform()
         print("Processo cancelado.")
