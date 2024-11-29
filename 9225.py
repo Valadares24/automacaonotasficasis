@@ -97,14 +97,16 @@ def determinar_cfop(cep_text):
 
 def desmarcar_checkbox_atual(driver, index):
     try:
-        time.sleep(5)
+        time.sleep(2)
         print(f"Desmarcando a checkbox {index}...")
         checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
-        checkbox = WebDriverWait(driver, 3).until(
-            EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
+        checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(checkbox).click().perform()
         print(f"Checkbox {index} desmarcada.")
+        time.sleep(3)
+        return index + 1
+
     except NoSuchElementException:
         print(f"Desmarcando a checkbox {index}...")
         checkbox_xpath = f'/html/body/div[8]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
@@ -467,7 +469,7 @@ def funcao_erro_municipio(driver):
         print(f'clicado botao de lupa endereço {botao_lupa_cep_ID}')
 
         campo_bairro_XPATH = '/html/body/div[35]/form/div[3]/div/div[4]/input'
-        campo_bairro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH_NAME, campo_bairro_XPATH)))
+        campo_bairro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, campo_bairro_XPATH)))
         ActionChains(driver).double_click( campo_bairro).perform()
         campo_bairro.clear()
         print('alterando campo bairro')
@@ -505,6 +507,12 @@ def funcao_erro_municipio(driver):
 
     except Exception as e:
         print(f"Erro na correção do município: {e}")
+        fechar_endereco_nota_XPATH = '/html/body/div[34]/div[1]/button'
+        fechar_endereco_nota = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, fechar_endereco_nota_XPATH)))
+        actions.move_to_element(fechar_endereco_nota).click().perform()
+        salvar_alteracoes_nota(driver)
+
+
         return False  
 
 def verificar_erro_salvamento(driver):
