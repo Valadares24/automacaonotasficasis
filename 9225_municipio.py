@@ -99,7 +99,7 @@ def desmarcar_checkbox_atual(driver, index):
     try:
         time.sleep(5)
         print(f"Desmarcando a checkbox {index}...")
-        checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[5]/span[2]/span'
+        checkbox_xpath = f'/html/body/div[7]/div[8]/div[2]/div[7]/table/tbody/tr[{index}]/td[1]/div'
         checkbox = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, checkbox_xpath)))
         actions = ActionChains(driver)
         actions.move_to_element(checkbox).click().perform()
@@ -448,7 +448,7 @@ def emitir_nota_fiscal(driver, index):
     except Exception as e:
             print(f"Erro ao validar envio: {e}") 
             
-def funcao_erro_municipio(driver):
+'''def funcao_erro_municipio(driver):
     
     try:
         print('executando alteracao de cadastro relacionada ao municipio')
@@ -492,15 +492,7 @@ def funcao_erro_municipio(driver):
             time.sleep(3)
             actions.move_to_element(botao_salvar_novo_cadastro).click().perform()
             print("Verificando mensagem de erro após salvar a nota...")
-
-            mensagem_erro_xpath = '//*[@id="mensagem"]/p[1]'
-            mensagem_erro = WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))).text
-            print(mensagem_erro)
-            erro_especifico_xpath = '/html/body/div[7]/div[2]/form/div/div/div[3]/div/ul/li'
-            erro_especifico = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, erro_especifico_xpath))).text
-            if 'O valor do campo município não foi encontrado no sistema' in erro_especifico:
-                cancelar_processo(driver)
+           
         except NoSuchElementException:
             botao_salvar_novo_cadastro_XPATH = '/html/body/div[36]/div[2]/div/button'
             botao_salvar_novo_cadastro = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, botao_salvar_novo_cadastro_XPATH)))
@@ -512,6 +504,14 @@ def funcao_erro_municipio(driver):
 
         time.sleep(3)
         salvar_alteracoes_nota(driver)
+        mensagem_erro_xpath = '//*[@id="mensagem"]/p[1]'
+        mensagem_erro = WebDriverWait(driver, 3).until(
+        EC.presence_of_element_located((By.XPATH, mensagem_erro_xpath))).text
+        print(mensagem_erro)
+        erro_especifico_xpath = '/html/body/div[7]/div[2]/form/div/div/div[3]/div/ul/li'
+        erro_especifico = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, erro_especifico_xpath))).text
+        if 'O valor do campo município não foi encontrado no sistema' in erro_especifico:
+            cancelar_processo(driver)
        
 
     except Exception as e:
@@ -523,7 +523,7 @@ def funcao_erro_municipio(driver):
 
 
         return False  
-
+'''
 def verificar_erro_salvamento(driver):
     try:
         time.sleep(1)
@@ -542,13 +542,13 @@ def verificar_erro_salvamento(driver):
             
             print(erro_especifico)
             
-            erros_municipio = ["O valor do campo município não foi encontrado no sistema", "UF válida"]
+            '''  erros_municipio = ["O valor do campo município não foi encontrado no sistema", "UF válida"]
             if any(erro in erro_especifico for erro in erros_municipio):
                 print('Erro específico no município encontrado.')
-                funcao_erro_municipio(driver)
+                #funcao_erro_municipio(driver)
                 return False  
             
-           
+           '''
             print('Erro encontrado, mas não é específico do município.')
             return True
         
