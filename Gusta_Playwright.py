@@ -2,6 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import time
 
+
 lista_erros = []
 
 async def iniciar_browser():
@@ -45,16 +46,25 @@ async def filtrar_notas(page):
     print('o botao está visivel')
 
     #page.locator(".InputDropdown-select[tabinex='0']").click(force=True)
-    page.locator("span.InputDropdown-arrow").click()
+    await page.locator("#select_situacao_nota").get_by_text("Selecione uma opção").click()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    #await page.locator("span.InputDropdown-text", has_text = "Selecione uma opção").click(force=True)
+    await page.locator("#filter-button-area").get_by_text("Filtrar").click()
+
+    #await page.locator("InputDropdown-arrow fas fa-caret-down").click()(force=True)
 
 
-    #time.sleep(10)
 
 
 async def selecionar_checkbox_e_campo(page, index):
+    
     try:
         print(f"Tentando acessar checkbox e campo da nota fiscal {index}...")
         campo_situacao_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span'#seletor por elemento.tipo
+        
+        
         print(f'status nota:{campo_situacao_selector}')
         status_campo_situacao = await page.inner_text(campo_situacao_selector)
         print(f"Status da nota fiscal {index}: {status_campo_situacao}")
@@ -62,12 +72,20 @@ async def selecionar_checkbox_e_campo(page, index):
         if status_campo_situacao != "Pendente":
             return False, index + 1
 
-        #checkbox_selector = f'tr:nth-child({index}) td:nth-child(1) div input'
-        checkbox_selector = f"tr:nth-child({index}) td.checkbox-item input[type='checkbox']"
+        checkbox_selector = f"tr:nth-child({index})  td.checkbox-item input[type='checkbox']"
+        #checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"
+        #checkbox_selector = f"tr:nth-child({index}) .checkbox-item > .input-checkbox > .tcheck[type = 'checkbox']"
+        #checkbox_selector = page.locator('div.tcheck', type='checkbox')       
+        if await page.is_visible(checkbox_selector):
+            print('elemento existe')
+
         campo_selector = f'tr:nth-child({index}) td:nth-child(4)'
         
-        await page.click(checkbox_selector)
+       #await page.locator(f'label[for="marcadodatatable21766216314"]').click(force=True)
+
+        await page.locator(checkbox_selector).click()
         print(f"Checkbox da nota fiscal {index} selecionada com sucesso.")
+       
 
         await page.click(campo_selector)
         print(f"Campo da nota fiscal {index} selecionado com sucesso.")
