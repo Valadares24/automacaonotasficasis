@@ -135,7 +135,7 @@ def clicar_no_item(driver, xpath):
 def processar_itens_nota(driver, cfop):
     
     item_xpaths = [f'/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[{i}]/td[1]' for i in range (1,17)]
-
+    
     for item_xpath in item_xpaths:
         try:
             item_element = WebDriverWait(driver, 3).until(
