@@ -25,7 +25,6 @@ async def login_bling(page):
 
         await page.locator("input.InputText-input[placeholder='Insira sua senha']").fill("gp-matriz_s2-BLg")
 
-        #clicar_login_buttn
         await page.locator("role=button[name='Entrar']").click()
         
         
@@ -72,23 +71,24 @@ async def selecionar_checkbox_e_campo(page, index):
         if status_campo_situacao != "Pendente":
             return False, index + 1
 
-        checkbox_selector = f"tr:nth-child({index})  td.checkbox-item input[type='checkbox']"
-        #checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"
+       
+        
+
+        #checkbox_selector = f"tr:nth-child({index}) //div[@class='input-checkbox']"
         #checkbox_selector = f"tr:nth-child({index}) .checkbox-item > .input-checkbox > .tcheck[type = 'checkbox']"
-        #checkbox_selector = page.locator('div.tcheck', type='checkbox')       
+        #checkbox_selector = page.locator('div.tcheck', type='checkbox')     
+
+        checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"  
         if await page.is_visible(checkbox_selector):
             print('elemento existe')
-
-        campo_selector = f'tr:nth-child({index}) td:nth-child(4)'
-        
-       #await page.locator(f'label[for="marcadodatatable21766216314"]').click(force=True)
-
         await page.locator(checkbox_selector).click()
         print(f"Checkbox da nota fiscal {index} selecionada com sucesso.")
        
-
-        await page.click(campo_selector)
+        #campo_selector = f'tr:nth-child({index}) > td.span.visible-xs > span' 
+        campo_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span' 
+        await page.locator(campo_selector).click(force=True)
         print(f"Campo da nota fiscal {index} selecionado com sucesso.")
+        
         return True, index
     except Exception as e:
         print(f"Erro ao selecionar checkbox ou campo da nota fiscal {index}: {e}")
@@ -97,9 +97,26 @@ async def selecionar_checkbox_e_campo(page, index):
 async def processar_itens_nota(page, cfop):
     try:
         print("Iniciando o processamento dos itens da nota fiscal...")
-        item_selector_base = "table > tbody > tr:nth-child({}) > td:nth-child(1)"
-        for i in range(1, 11):  # Processar até 10 itens
+
+        #item_selector_base = "table > tbody > .cursor:pointer > tr:nth-child({}) #item{i}"
+        
+        #item_selector_base = "table > tbody > tr.linhaItemNota:nth-child({})"
+        #item_selector_base = "table > tbody > tr.linhaItemNota"
+
+        #item_selector_base = "table > tbody > tr.linhaItemNota "
+        #item_selector_base = "table > tbody > tr.linhaItemNota > //*[@id="item0"]/td[1]"
+       #item_selector_base = [f'/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[{i}]/td[1]' for i in range (1,17)]
+        #item_selector_base = "#//*[@id="item0"]/td[1]"
+        #item_selector_base = "table > tbody tr.linhaItemNota #item{}"
+        #item_selector_base = "//table/tbody/tr[contains(@class, 'linhaItemNota')]//*[@id='item0']/td[1]"
+        item_selector_base = "table > tbody > tr.linhaItemNota "#SELETOR PARCIALMENTE VÁLIDO - COMPLETAR COM ITENS DINAMIGOS
+        print(f'{item_selector_base}:')
+
+        #apontar retorno de seletor
+
+        for i in range(0, 11):  # Processar até 10 itens
             item_selector = item_selector_base.format(i)
+            #await item_selector
             if await page.is_visible(item_selector):
                 print(f"Item {i} encontrado.")
                 await page.click(item_selector)
@@ -119,6 +136,10 @@ async def processar_item(page, cfop, item_selector):
         if await page.is_visible(desconto_selector):
             await page.fill(desconto_selector, "")
             print("Desconto removido com sucesso.")
+
+        codigo_prod = "#edCodigo"
+        if await page.is_visible(codigo_prod):
+            await page.cop
 
         # Preencher CFOP
         cfop_selector = "#edCfop"
@@ -175,9 +196,12 @@ async def emitir_nota_fiscal(page, index):
 
 async def processar_nota_fiscal(page, index):
     try:
+        
         nota_selecionada, novo_index = await selecionar_checkbox_e_campo(page, index)
         if nota_selecionada:
-            cep_selector = "input#cep"
+            cep_selector = "input#etiqueta_cep"
+            print(cep_selector)
+            #time.sleep(10)
             cep_text = await page.input_value(cep_selector)
             cfop = determinar_cfop(cep_text)
             await processar_itens_nota(page, cfop)
@@ -193,6 +217,7 @@ async def processar_nota_fiscal(page, index):
         return True, index + 1
 
 def determinar_cfop(cep_text):
+    #capturando o texto de um lugar vazio
     cep_prefix = cep_text[:5]
     cep_num = int(cep_prefix.replace("-", ""))
     print(f"CEP numérico: {cep_num}")
