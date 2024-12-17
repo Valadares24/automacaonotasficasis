@@ -132,15 +132,26 @@ async def processar_item(page, cfop, item_selector):
         print(f"Processando item com selector: {item_selector}")
         
         # Limpar campo de desconto
-        desconto_selector = "#edValorDescontoItem"
-        if await page.is_visible(desconto_selector):
-            await page.fill(desconto_selector, "")
-            print("Desconto removido com sucesso.")
+        desconto_selector = "#edValorDescontoItem"#criação variavel
+        if await page.is_visible(desconto_selector):#condição de espera para elemento ser visivel
+            await page.fill(desconto_selector, "")#espera e comando de ação
+            print("Desconto removido com sucesso.")#retorno explicito
 
-        codigo_prod = "#edCodigo"
-        if await page.is_visible(codigo_prod):
-            await page.cop
+        #copiar codigo
+        codigo_prod = "#edCodigo"#declaração de variável
+        if await page.is_visible(codigo_prod):#condição de espera para elemento visivel
+            texto = await page.locator(codigo_prod).input_value()
+            print(f"codigo produto: {texto}")
+        else:
+            print('Elemento nao visivel')
 
+
+        #colar codigo
+        colar_cod= '#edDescricao'
+        if await page.is_visible(colar_cod):
+            await page.fill(colar_cod, str(texto))
+            print(f"codigo produto: {colar_cod}")
+            
         # Preencher CFOP
         cfop_selector = "#edCfop"
         if await page.is_visible(cfop_selector):
@@ -201,7 +212,7 @@ async def processar_nota_fiscal(page, index):
         if nota_selecionada:
             cep_selector = "input#etiqueta_cep"
             print(cep_selector)
-            #time.sleep(10)
+            time.sleep(10)
             cep_text = await page.input_value(cep_selector)
             cfop = determinar_cfop(cep_text)
             await processar_itens_nota(page, cfop)
