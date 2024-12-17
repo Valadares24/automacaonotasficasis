@@ -52,7 +52,6 @@ async def filtrar_notas(page):
     #await page.locator("span.InputDropdown-text", has_text = "Selecione uma opção").click(force=True)
     await page.locator("#filter-button-area").get_by_text("Filtrar").click()
 
-    #await page.locator("InputDropdown-arrow fas fa-caret-down").click()(force=True)
 
 
 
@@ -70,13 +69,6 @@ async def selecionar_checkbox_e_campo(page, index):
 
         if status_campo_situacao != "Pendente":
             return False, index + 1
-
-       
-        
-
-        #checkbox_selector = f"tr:nth-child({index}) //div[@class='input-checkbox']"
-        #checkbox_selector = f"tr:nth-child({index}) .checkbox-item > .input-checkbox > .tcheck[type = 'checkbox']"
-        #checkbox_selector = page.locator('div.tcheck', type='checkbox')     
 
         checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"  
         if await page.is_visible(checkbox_selector):
@@ -98,21 +90,9 @@ async def processar_itens_nota(page, cfop):
     try:
         print("Iniciando o processamento dos itens da nota fiscal...")
 
-        #item_selector_base = "table > tbody > .cursor:pointer > tr:nth-child({}) #item{i}"
-        
-        #item_selector_base = "table > tbody > tr.linhaItemNota:nth-child({})"
-        #item_selector_base = "table > tbody > tr.linhaItemNota"
-
-        #item_selector_base = "table > tbody > tr.linhaItemNota "
-        #item_selector_base = "table > tbody > tr.linhaItemNota > //*[@id="item0"]/td[1]"
-       #item_selector_base = [f'/html/body/div[7]/div[2]/form/div/div/div[42]/table/tbody/tr[{i}]/td[1]' for i in range (1,17)]
-        #item_selector_base = "#//*[@id="item0"]/td[1]"
-        #item_selector_base = "table > tbody tr.linhaItemNota #item{}"
-        #item_selector_base = "//table/tbody/tr[contains(@class, 'linhaItemNota')]//*[@id='item0']/td[1]"
         item_selector_base = "table > tbody > tr.linhaItemNota "#SELETOR PARCIALMENTE VÁLIDO - COMPLETAR COM ITENS DINAMIGOS
+        #item_selector_base = "#item0"
         print(f'{item_selector_base}:')
-
-        #apontar retorno de seletor
 
         for i in range(0, 11):  # Processar até 10 itens
             item_selector = item_selector_base.format(i)
@@ -151,6 +131,8 @@ async def processar_item(page, cfop, item_selector):
         if await page.is_visible(colar_cod):
             await page.fill(colar_cod, str(texto))
             print(f"codigo produto: {colar_cod}")
+            time.sleep(3)
+            await page.locator(colar_cod).press('Enter')
             
         # Preencher CFOP
         cfop_selector = "#edCfop"
@@ -165,15 +147,17 @@ async def processar_item(page, cfop, item_selector):
 
 async def salvar_alteracoes_item(page):
     try:
-        salvar_button_selector = "button#salvar-item"
-        await page.click(salvar_button_selector)
+        #salvar_button_selector = page.get_by_role("button", name="Salvar").filter(has_text="Salvar", has_attribute="id", value="botaoSalvar")
+
+        salvar_button_selector = page.locator("body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button")
+        await salvar_button_selector.click()
         print("Alterações do item salvas com sucesso.")
     except Exception as e:
         print(f"Erro ao salvar alterações do item: {e}")
 
 async def salvar_alteracoes_nota(page):
     try:
-        salvar_nota_selector = "button#salvar-nota"
+        salvar_nota_selector = "#botaoSalvar"
         await page.click(salvar_nota_selector)
         print("Alterações da nota fiscal salvas com sucesso.")
     except Exception as e:
@@ -212,7 +196,7 @@ async def processar_nota_fiscal(page, index):
         if nota_selecionada:
             cep_selector = "input#etiqueta_cep"
             print(cep_selector)
-            time.sleep(10)
+            time.sleep(3)
             cep_text = await page.input_value(cep_selector)
             cfop = determinar_cfop(cep_text)
             await processar_itens_nota(page, cfop)
