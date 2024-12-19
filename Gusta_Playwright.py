@@ -193,7 +193,9 @@ async def emitir_nota_fiscal(page, index):
 async def status_encerramento(page,index):
     mensagem = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span" 
     print(mensagem)   
-    time.sleep(3)
+    if await page.locator(mensagem) == "Notas fiscais eletrônicas não foram validadas!" :
+        print(mensagem)  
+        
 
 
 async def processar_nota_fiscal(page, index):
