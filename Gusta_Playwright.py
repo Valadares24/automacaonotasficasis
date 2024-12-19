@@ -90,7 +90,7 @@ async def processar_itens_nota(page, cfop):
     try:
         print("Iniciando o processamento dos itens da nota fiscal...")
 
-        item_selector_base = "table > tbody > tr.linhaItemNota "#SELETOR PARCIALMENTE VÁLIDO - COMPLETAR COM ITENS DINAMIGOS
+        item_selector_base = "#item{} > td:nth-child(1)"#SELETOR PARCIALMENTE VÁLIDO - COMPLETAR COM ITENS DINAMIGOS
         #item_selector_base = "#item0"
         print(f'{item_selector_base}:')
 
@@ -159,6 +159,7 @@ async def salvar_alteracoes_nota(page):
     try:
         salvar_nota_selector = "#botaoSalvar"
         await page.click(salvar_nota_selector)
+        time.sleep(4)
         print("Alterações da nota fiscal salvas com sucesso.")
     except Exception as e:
         print(f"Erro ao salvar alterações da nota: {e}")
@@ -178,8 +179,8 @@ async def verificar_erro_salvamento(page):
 
 async def emitir_nota_fiscal(page, index):
     try:
-        enviar_nota_selector = "button#enviar-nota"
-        imprimir_nota_selector = "button#imprimir-nota"
+        enviar_nota_selector = "#container > div.side.new-box-side > div.new-side-bar-full > div > div.main-actions > button:nth-child(1) > span.action-text.hide-on-minimize"
+        imprimir_nota_selector = "#notaAcao"
 
         await page.click(enviar_nota_selector)
         print("Nota fiscal enviada com sucesso.")
@@ -188,6 +189,12 @@ async def emitir_nota_fiscal(page, index):
         print("Nota fiscal enviada para impressão.")
     except Exception as e:
         print(f"Erro ao emitir a nota fiscal {index}: {e}")
+
+async def status_encerramento(page,index):
+    mensagem = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span" 
+    print(mensagem)   
+    time.sleep(3)
+
 
 async def processar_nota_fiscal(page, index):
     try:
