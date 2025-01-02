@@ -75,7 +75,6 @@ async def selecionar_checkbox_e_campo(page, index):
             campo_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span' 
             await page.locator(campo_selector).click(force=True)
             print(f"Campo da nota fiscal {index} selecionado com sucesso.")
-            
             return True, index
             
         elif status_campo_situacao != "Pendente":
@@ -141,17 +140,16 @@ async def processar_item(page, cfop, item_selector, index):
             await page.fill(cfop_selector, str(cfop))
             print(f"CFOP preenchido: {cfop}")
 
-        # Salvar alteraçõesTimeoutError
+        # Salvar alterações
         await salvar_alteracoes_item(page)
-    except  (TimeoutError, RuntimeError, TypeError, NameError):
+    except Exception as e:
         print(f"Erro ao processar o item: {e}")
         erro_editar_item(page, index, checkbox_selector)
 
-async def erro_editar_item(page, index, checkbox_selector):
-    print("bloco de erro de edição de nota fiscal")
+async def erro_editar_item(page):
     cancelar_editar_item_nota = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button"
     await page.click(cancelar_editar_item_nota)
-    await cancelar_nota(page, index, checkbox_selector)    
+    #await cancelar_nota(page, index, checkbox_selector)    
 
 async def salvar_alteracoes_item(page):
     try:
@@ -239,6 +237,11 @@ async def emitir_nota_fiscal(page, index):
     except Exception as e:
         print(f"Erro ao emitir a nota fiscal {index}: {e}")
 
+async def desmarcar_chekcbox(page, index,checkbox_selector):
+        await page.locator(checkbox_selector).is_checked()
+        await page.click(checkbox_selector)
+        return index + 1 
+
 async def avaliar_impressao(page,index, checkbox_selector):
     time.sleep(10)
     mensagem_impressao = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
@@ -251,16 +254,17 @@ async def avaliar_impressao(page,index, checkbox_selector):
         await page.is_visible(x_final)
         await page.locator(x_final).click()
         print("erro na impressão da nota - possível consulta de situação")
-        if await page.locator(checkbox_selector).is_checked():
+        desmarcar_chekcbox(page, index,checkbox_selector)
+        '''if await page.locator(checkbox_selector).is_checked():
             await page.click(checkbox_selector)
-            return True, index + 1 
+            return index + 1 '''
     #await page.wait_for_selector(x_final, state = "visible", timeout = 100000)
     else:
         await page.is_visible(x_final)
         await page.locator(x_final).click()
         print("impressao nota concluida com sucess")
         time.sleep(1.8)
-        return False, index
+        return index
 
 async def cancelar_nota(page):
     botao_cancelar = "#botaoCancelar"
@@ -289,23 +293,42 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
             time.sleep(3)
             cep_text = await page.input_value(cep_selector)
             cfop = determinar_cfop(cep_text)
-            await processar_itens_nota(page, cfop, index)
-            await salvar_alteracoes_nota(page)
-            
-            if await verificar_erro_salvamento(page):
-                print(f"Erro ao salvar a nota fiscal {index}.")
-                lista_erros.append(f"Erro ao salvar a nota fiscal {index}.")
-                await cancelar_nota(page)
-                #await page.click(checkbox_selector)
-                return False, index + 1
+            try:
+                await processar_itens_nota(page, cfop, index)
+                await salvar_alteracoes_nota(page)
+                if await verificar_erro_salvamento(page):
+                    print(f"Erro ao salvar a nota fiscal {index}.")
+                    lista_erros.append(f"Erro ao salvar a nota fiscal {index}.")
+                    await cancelar_nota(page)
+                    await  desmarcar_chekcbox(page, index,checkbox_selector)
+                    return index + 1
+                else:
+                    await emitir_nota_fiscal(page, index)
+                    await avaliar_impressao(page, index, checkbox_selector)
+                return False, novo_index
                 
-            else:
-                await emitir_nota_fiscal(page, index)
-                await avaliar_impressao(page, index, checkbox_selector)
-        return False, novo_index
+            except Exception as e:
+                await erro_editar_item(page)
+                await cancelar_nota(page)
+                await  desmarcar_chekcbox(page, index,checkbox_selector)
+            return True, index + 1
     except Exception as e:
         print(f"Erro ao processar a nota fiscal {index}: {e}")
-        return True, index + 1
+    return True, index + 1
+    
+            
+            #if await verificar_erro_salvamento(page):
+               # print(f"Erro ao salvar a nota fiscal {index}.")
+               # lista_erros.append(f"Erro ao salvar a nota fiscal {index}.")
+               # await cancelar_nota(page)
+                #await page.click(checkbox_selector)
+                #return index + 1
+                
+           # else:
+                #await emitir_nota_fiscal(page, index)
+                #await avaliar_impressao(page, index, checkbox_selector)
+        #return False, novo_index
+    
 
 def determinar_cfop(cep_text):
     #capturando o texto de um lugar vazio
@@ -347,7 +370,9 @@ async def main():
                 continue
 
             notas_inexistentes_consecutivas = 0
+            
             erro, novo_index = await processar_nota_fiscal(page, index, checkbox_selector)
+            print("Processar nota retornou: erro={erro}, novo_index={novo_index}")
             if erro:
                 error_count += 1
             else:
