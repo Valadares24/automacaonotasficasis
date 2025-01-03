@@ -264,26 +264,33 @@ async def emitir_nota_fiscal(page, index):
         print(f"Erro ao emitir a nota fiscal {index}: {e}")
 
 async def avaliar_impressao(page,index, checkbox_selector):
-    time.sleep(10)
+    
     mensagem_impressao = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
     x_final = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-titlebar.ui-corner-all.ui-widget-header.ui-helper-clearfix > button"
 
-    mensagem = await page.inner_text(mensagem_impressao)
-    print(mensagem)
+    try:
+        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=3000)
+        mensagem = (await page.inner_text(mensagem_impressao)).strip()
+        print(mensagem)
+        time.sleep(1)
 
-    if mensagem == "Notas fiscais eletrônicas não foram validadas!":
-        await page.is_visible(x_final)
-        await page.locator(x_final).click()
-        print("erro na impressão da nota - possível consulta de situação")
-        if await page.locator(checkbox_selector).is_checked():
-            await page.click(checkbox_selector)
-            return True, index + 1 
-    #await page.wait_for_selector(x_final, state = "visible", timeout = 100000)
-    else:
-        await page.is_visible(x_final)
-        await page.locator(x_final).click()
-        print("impressao nota concluida com sucess")
-        time.sleep(1.8)
+        if  "Notas fiscais eletrônicas não foram validadas!" in mensagem:
+            await page.wait_for_selector(x_final, state="visible")
+            await page.locator(x_final).click()
+            print("erro na impressão da nota - possível consulta de situação")
+            if await page.locator(checkbox_selector).is_checked():
+                await page.click(checkbox_selector)
+                return True, index + 1 
+            #await page.wait_for_selector(x_final, state = "visible", timeout = 100000)
+            else:
+                await page.wait_for_selector(x_final, state="visible")
+                await page.locator(x_final).click()
+                print("impressao nota concluida com sucess")
+                time.sleep(1.8)
+                return False, index
+        
+    except Exception as e:
+        print(f"erro ao avaliar a impressão: {e}")
         return False, index
 
 async def cancelar_nota(page):
