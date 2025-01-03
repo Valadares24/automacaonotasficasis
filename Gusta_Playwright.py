@@ -53,6 +53,8 @@ async def filtrar_notas(page):
     await page.locator("#filter-button-area").get_by_text("Filtrar").click()
     time.sleep(1)
 
+print(checkbox_selector)
+
 async def selecionar_checkbox_e_campo(page, index):
     global checkbox_selector
     try:
@@ -143,7 +145,7 @@ async def processar_item(page, cfop, item_selector, index):
 
         # Salvar alteraçõesTimeoutError
         await salvar_alteracoes_item(page)
-    except  (TimeoutError, RuntimeError, TypeError, NameError):
+    except Exception as e:
         print(f"Erro ao processar o item: {e}")
         erro_editar_item(page, index, checkbox_selector)
 
