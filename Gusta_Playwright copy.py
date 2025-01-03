@@ -56,7 +56,6 @@ async def filtrar_notas(page):
 print(checkbox_selector)
 
 async def selecionar_checkbox_e_campo(page, index):
-    global checkbox_selector
     try:
         print(f"Tentando acessar checkbox e campo da nota fiscal {index}...")
         campo_situacao_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span'#seletor por elemento.tipo
@@ -78,16 +77,16 @@ async def selecionar_checkbox_e_campo(page, index):
             await page.locator(campo_selector).click(force=True)
             print(f"Campo da nota fiscal {index} selecionado com sucesso.")
             
-            return True, index
+            return True, index, checkbox_selector
             
         elif status_campo_situacao != "Pendente":
             print("nota pulada, não editada - status dif pendente")
-            return False, index + 1
+            return False, index + 1, None
             
     except Exception as e:
         print(f"Erro ao selecionar checkbox ou campo da nota fiscal {index}: {e}")
         print(f"Returning: (False, {index + 1})")
-        return False, index + 1
+        return False, index + 1, None
 
 async def processar_itens_nota(page, cfop, index):
     try:
@@ -268,17 +267,6 @@ async def cancelar_nota(page):
     botao_cancelar = "#botaoCancelar"
     await page.click(botao_cancelar)
     
-
-'''async def status_encerramento(page):#include index
-    mensagem = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span" 
-    
-    #status_campo_situacao = await page.inner_text(campo_situacao_selector)
-    mensagem_encerramento = await page.inner_text(mensagem)
-    print(mensagem_encerramento)
-    if "sucesso" in await page.is_visible(mensagem_encerramento):
-        print(f"sucesso na verificação: {mensagem_encerramento}")
-        '''
-
 print(checkbox_selector)
 
 async def processar_nota_fiscal(page, index, checkbox_selector):
@@ -329,7 +317,6 @@ async def main():
 
     await login_bling(page)
     await filtrar_notas(page)
-    global checkbox_selector
 
     success_count = 0
     error_count = 0
