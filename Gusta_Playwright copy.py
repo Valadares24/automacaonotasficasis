@@ -102,51 +102,74 @@ async def processar_itens_nota(page, cfop, index):
             if await page.is_visible(item_selector):
                 print(f"Item {i} encontrado.")
                 await page.click(item_selector)
-                await processar_item(page, cfop, index,  item_selector)
+                await processar_item(page, cfop, index,  item_selector, checkbox_selector)
             else:
                 print(f"Item {i} não encontrado. Finalizando processamento.")
                 break
     except Exception as e:
         print(f"Erro ao processar os itens da nota fiscal: {e}")
 
-async def processar_item(page, cfop, item_selector, index):
+async def processar_item(page, cfop, item_selector, index, checkbox_selector):
     try:
         print(f"Processando item com selector: {item_selector}")
         
         # Limpar campo de desconto
-        desconto_selector = "#edValorDescontoItem"#criação variavel
-        if await page.is_visible(desconto_selector):#condição de espera para elemento ser visivel
-            await page.fill(desconto_selector, "")#espera e comando de ação
-            print("Desconto removido com sucesso.")#retorno explicito
+        try:
+            desconto_selector = "#edValorDescontoItem"#criação variavel
+            if await page.is_visible(desconto_selector):#condição de espera para elemento ser visivel
+                await page.fill(desconto_selector, "")#espera e comando de ação
+                print("Desconto removido com sucesso.")#retorno explicito
+        except Exception as e:
+            print(f"Erro ao apagar o desconto do item: {e}")
+            await erro_editar_item(page, index, checkbox_selector)
+            return False
 
+        try:
         #copiar codigo
-        codigo_prod = "#edCodigo"#declaração de variável
-        if await page.is_visible(codigo_prod):#condição de espera para elemento visivel
-            texto = await page.locator(codigo_prod).input_value()
-            print(f"codigo produto: {texto}")
-        else:
-            print('Elemento nao visivel')
-
+            codigo_prod = "#edCodigo"#declaração de variável
+            if await page.is_visible(codigo_prod):#condição de espera para elemento visivel
+                texto = await page.locator(codigo_prod).input_value()
+                print(f"codigo produto: {texto}")
+            else:
+                print('Elemento nao visivel')
+        except Exception as e:
+            print(f"Erro ao copiar codigo do item: {e}")
+            await erro_editar_item(page, index, checkbox_selector)
+            return False
 
         #colar codigo
-        colar_cod= '#edDescricao'
-        if await page.is_visible(colar_cod):
-            await page.fill(colar_cod, str(texto))
-            print(f"codigo produto: {colar_cod}")
-            time.sleep(3)
-            await page.locator(colar_cod).press('Enter')
-            
-        # Preencher CFOP
-        cfop_selector = "#edCfop"
-        if await page.is_visible(cfop_selector):
-            await page.fill(cfop_selector, str(cfop))
-            print(f"CFOP preenchido: {cfop}")
+        try:
+            colar_cod= '#edDescricao'
+            if await page.is_visible(colar_cod):
+                await page.fill(colar_cod, str(texto))
+                print(f"codigo produto: {colar_cod}")
+                time.sleep(3)
+                await page.locator(colar_cod).press('Enter')
+        except Exception as e:
+            print(f"Erro ao processar o item: {e}")
+            await erro_editar_item(page, index, checkbox_selector)
+            return False
+        
 
-        # Salvar alteraçõesTimeoutError
+        # Preencher CFOP
+        try:
+            cfop_selector = "#edCfop"
+            if await page.is_visible(cfop_selector):
+                await page.fill(cfop_selector, str(cfop))
+                print(f"CFOP preenchido: {cfop}")
+        except Exception as e:
+            print(f"Erro ao processar o item: {e}")
+            await erro_editar_item(page, index, checkbox_selector)
+            return False
+        
+     # Salvar alteraçõesTimeoutError
         await salvar_alteracoes_item(page)
+        return True
+
     except Exception as e:
         print(f"Erro ao processar o item: {e}")
-        erro_editar_item(page, index, checkbox_selector)
+        await erro_editar_item(page, index, checkbox_selector)
+        return False
 
 async def erro_editar_item(page, index, checkbox_selector):
     print("bloco de erro de edição de nota fiscal")
@@ -272,7 +295,9 @@ print(checkbox_selector)
 async def processar_nota_fiscal(page, index, checkbox_selector):
     try:
         
-        nota_selecionada, novo_index = await selecionar_checkbox_e_campo(page, index)
+        nota_selecionada, novo_index, checkbox_selector = await selecionar_checkbox_e_campo(page, index)
+        print(f"Returned values - nota_selecionada: {nota_selecionada}, novo_index: {novo_index}, checkbox_selector: {checkbox_selector}")
+
         if nota_selecionada:
             cep_selector = "input#etiqueta_cep"
             print(cep_selector)
