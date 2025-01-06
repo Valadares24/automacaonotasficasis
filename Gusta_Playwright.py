@@ -292,7 +292,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
             print(cep_selector)
             time.sleep(3)
             cep_text = await page.input_value(cep_selector)
-            cfop = determinar_cfop(page, cep_text)
+            cfop = determinar_cfop(cep_text)
             await processar_itens_nota(page, cfop, index)
             await salvar_alteracoes_nota(page)
             
@@ -311,9 +311,9 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
         print(f"Erro ao processar a nota fiscal {index}: {e}")
         return True, index + 1
 
-async def determinar_cfop(page, cep_text):
+def determinar_cfop(cep_text):
     #capturando o texto de um lugar vazio
-    cep_prefix = await page.locator(cep_text[:5])
+    cep_prefix = cep_text[:5]
     cep_num = int(cep_prefix)
     print(f"CEP numérico: {cep_num}")
     if (72800 <= cep_num <= 72999) or (73700 <= cep_num <= 76799):
