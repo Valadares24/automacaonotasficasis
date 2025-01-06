@@ -108,6 +108,7 @@ async def processar_itens_nota(page, cfop, index):
                 break
     except Exception as e:
         print(f"Erro ao processar os itens da nota fiscal: {e}")
+        await cancelar_nota(page)
 
 async def processar_item(page, cfop, item_selector, index, checkbox_selector):
     try:
@@ -140,10 +141,10 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         #colar codigo
         try:
             colar_cod= '#edDescricao'
-            if await page.is_visible(colar_cod):
+            if await page.locator(colar_cod).is_enabled():
                 await page.fill(colar_cod, str(texto))
                 print(f"codigo produto: {colar_cod}")
-                time.sleep(3)
+                time.sleep(2)
                 await page.locator(colar_cod).press('Enter')
         except Exception as e:
             print(f"Erro ao processar o item: {e}")
@@ -202,7 +203,10 @@ async def salvar_alteracoes_nota(page):
 async def verificar_erro_salvamento(page):
     try:
         mensagem_erro_selector = "#mensagem p"
-        if await page.is_visible(mensagem_erro_selector):
+        mensagem_erro = await page.inner_text(mensagem_erro_selector)
+
+        if "Não foi possível salvar a Nota Fiscal" in mensagem_erro:
+            print("Erro no salvamento")
             mensagem_erro = await page.inner_text(mensagem_erro_selector)
             print(f"Mensagem de erro detectada: {mensagem_erro}")
             return True
@@ -222,7 +226,7 @@ async def emitir_nota_fiscal(page, index):
             await page.click(enviar_nota_selector)
             print("Nota fiscal enviada com sucesso.")
 
-        time.sleep(3)
+        time.sleep(2)
         print("clicking prin#2 RN")
         await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout = 10000)
         #if await page.is_visible(imprimir_nota_selector):
@@ -269,7 +273,7 @@ async def avaliar_impressao(page,index, checkbox_selector):
     x_final = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-titlebar.ui-corner-all.ui-widget-header.ui-helper-clearfix > button"
 
     try:
-        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=3000)
+        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=30000)
         mensagem = (await page.inner_text(mensagem_impressao)).strip()
         print(mensagem)
         time.sleep(1)
@@ -282,12 +286,12 @@ async def avaliar_impressao(page,index, checkbox_selector):
                 await page.click(checkbox_selector)
                 return True, index + 1 
             #await page.wait_for_selector(x_final, state = "visible", timeout = 100000)
-            else:
-                await page.wait_for_selector(x_final, state="visible")
-                await page.locator(x_final).click()
-                print("impressao nota concluida com sucess")
-                time.sleep(1.8)
-                return False, index
+        else:
+            await page.wait_for_selector(x_final, state="visible")
+            await page.locator(x_final).click()
+            print("impressao nota concluida com sucess")
+            time.sleep(1.8)
+            return False, index
         
     except Exception as e:
         print(f"erro ao avaliar a impressão: {e}")
@@ -308,7 +312,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
         if nota_selecionada:
             cep_selector = "input#etiqueta_cep"
             print(cep_selector)
-            time.sleep(3)
+            time.sleep(2)
             cep_text = await page.input_value(cep_selector)
             cfop = determinar_cfop(cep_text)
             await processar_itens_nota(page, cfop, index)
