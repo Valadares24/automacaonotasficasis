@@ -109,6 +109,8 @@ async def processar_itens_nota(page, cfop, index):
                 break
     except Exception as e:
         print(f"Erro ao processar os itens da nota fiscal: {e}")
+        await cancelar_nota(page)
+        return False
 
 async def processar_item(page, cfop, item_selector, index):
     try:
@@ -134,7 +136,7 @@ async def processar_item(page, cfop, item_selector, index):
         if await page.is_visible(colar_cod):
             await page.fill(colar_cod, str(texto))
             print(f"codigo produto: {colar_cod}")
-            time.sleep(3)
+            time.sleep(2)
             await page.locator(colar_cod).press('Enter')
             
         # Preencher CFOP
@@ -200,7 +202,7 @@ async def emitir_nota_fiscal(page, index):
             await page.click(enviar_nota_selector)
             print("Nota fiscal enviada com sucesso.")
 
-        time.sleep(3)
+        time.sleep(2)
         print("clicking prin#2 RN")
         await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout = 10000)
         #if await page.is_visible(imprimir_nota_selector):
@@ -242,7 +244,7 @@ async def emitir_nota_fiscal(page, index):
         print(f"Erro ao emitir a nota fiscal {index}: {e}")
 
 async def avaliar_impressao(page,index, checkbox_selector):
-    time.sleep(10)
+    #time.sleep(10)
     mensagem_impressao = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
     x_final = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-titlebar.ui-corner-all.ui-widget-header.ui-helper-clearfix > button"
 
@@ -290,7 +292,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
             print(cep_selector)
             time.sleep(3)
             cep_text = await page.input_value(cep_selector)
-            cfop = determinar_cfop(cep_text)
+            cfop = determinar_cfop(page, cep_text)
             await processar_itens_nota(page, cfop, index)
             await salvar_alteracoes_nota(page)
             
@@ -309,9 +311,9 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
         print(f"Erro ao processar a nota fiscal {index}: {e}")
         return True, index + 1
 
-def determinar_cfop(cep_text):
+async def determinar_cfop(page, cep_text):
     #capturando o texto de um lugar vazio
-    cep_prefix = cep_text[:5]
+    cep_prefix = await page.locator(cep_text[:5])
     cep_num = int(cep_prefix)
     print(f"CEP numérico: {cep_num}")
     if (72800 <= cep_num <= 72999) or (73700 <= cep_num <= 76799):
