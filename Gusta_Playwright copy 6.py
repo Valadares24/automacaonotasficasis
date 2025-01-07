@@ -51,7 +51,7 @@ async def filtrar_notas(page):
     await page.keyboard.press('Enter')
     #await page.locator("span.InputDropdown-text", has_text = "Selecione uma opção").click(force=True)
     await page.locator("#filter-button-area").get_by_text("Filtrar").click()
-    time.sleep(10)
+    time.sleep(100)
 
 print(checkbox_selector)
 
