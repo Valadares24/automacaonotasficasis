@@ -4,7 +4,7 @@ import time
 
 
 lista_erros = []
-checkbox_selector = None
+
 
 async def iniciar_browser():
     try:
@@ -53,9 +53,7 @@ async def filtrar_notas(page):
     await page.locator("#filter-button-area").get_by_text("Filtrar").click()
     time.sleep(1)
 
-print(checkbox_selector)
-
-async def selecionar_checkbox_e_campo(page, index):
+async def selecionar_checkbox_e_campo(page, index, checkbox_selector):
     try:
         print(f"Tentando acessar checkbox e campo da nota fiscal {index}...")
         campo_situacao_selector = f'tr:nth-child({index}) td:nth-child(5) span:nth-child(2) span'#seletor por elemento.tipo
@@ -88,7 +86,7 @@ async def selecionar_checkbox_e_campo(page, index):
         print(f"Returning: (False, {index + 1})")
         return False, index + 1, None
 
-async def processar_itens_nota(page, cfop, index):
+async def processar_itens_nota(page, cfop, index, checkbox_selector):
     try:
         print("Iniciando o processamento dos itens da nota fiscal...")
 
@@ -108,7 +106,7 @@ async def processar_itens_nota(page, cfop, index):
                 break
     except Exception as e:
         print(f"Erro ao processar os itens da nota fiscal: {e}")
-        await cancelar_nota(page)
+        await cancelar_nota(page, checkbox_selector, index)
 
 async def processar_item(page, cfop, item_selector, index, checkbox_selector):
     try:
@@ -200,7 +198,7 @@ async def salvar_alteracoes_nota(page):
         await page.click(botao_cancelar)
         return False
         
-async def verificar_erro_salvamento(page, checkbox_selector):
+async def verificar_erro_salvamento(page, checkbox_selector, index):
     try:
         mensagem_erro_selector = "#mensagem p"
         mensagem_erro = await page.inner_text(mensagem_erro_selector)
@@ -308,9 +306,9 @@ async def cancelar_nota(page, checkbox_selector, index):
         return True, index + 1
     except Exception as e:
         print('erro ao clicar no botao de cancelamento')
-print(checkbox_selector)
+        return False, index + 1
 
-async def processar_nota_fiscal(page, index, checkbox_selector):
+async def processar_nota_fiscal(page,index, checkbox_selector):
     try:
         
         nota_selecionada, novo_index, checkbox_selector = await selecionar_checkbox_e_campo(page, index)
@@ -325,7 +323,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
             await processar_itens_nota(page, cfop, index)
             await salvar_alteracoes_nota(page)
             
-            if await verificar_erro_salvamento(page, checkbox_selector, index):
+            if await verificar_erro_salvamento(page, index, checkbox_selector):
                 print(f"Erro ao salvar a nota fiscal {index}.")
                 lista_erros.append(f"Erro ao salvar a nota fiscal {index}.")
                 await cancelar_nota(page, checkbox_selector, index)
@@ -361,6 +359,8 @@ async def main():
     await login_bling(page)
     await filtrar_notas(page)
 
+    checkbox_selector = None 
+    
     success_count = 0
     error_count = 0
     index = 1
