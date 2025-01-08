@@ -1,0 +1,6 @@
+E aí, tudo bem? Aqui é o Valadares, dev que fez o Robô de automação de notas.
+Nesse arquivo você vai achar que precisa pra tocar as notas em paz
+
+https://pleasant-pantydraco-a4c.notion.site/BOT_NFS-126108542edb80828866c257be5fddda?pvs=4
+
+após ler as instruções, baixe o arquivo 9225.py, anexado neste repositório(grupo de arquivos)

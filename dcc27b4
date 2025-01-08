@@ -1,0 +1,40 @@
+[33mc45385c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m campo copiar codigo mudado para seletor por ID
+[33mdcc27b4[m executavel atualizado
+[33m5390eec[m arquivo atualizado
+[33m33bf24b[m botoes de envio revisados e tempo aumentado - precisa refatorar correcao de municipio
+[33mc22b650[m tempo p impressão final up to 2sec
+[33maee5456[m tempos reduzidos para 1 segundo antes da impressão
+[33mfc7582a[m tempo menor espera verificar mensagem
+[33m67d3096[m tempos reduzidos na impressão da nota
+[33m1727adb[m upload versão tempo reduido p pc empresa - arquivo executável
+[33maf245bf[m tempos de espera reduzidos para 10 segundos
+[33m6543f6c[m corrigido botao falha
+[33me49c32e[m arquivo executavel atualizado
+[33m66d3fa7[m erro de impressão - clique alterado para botao de fechar nota
+[33m0e7a050[m update executável
+[33me483220[m update executável
+[33mb13c620[m correcao arquivo executavel
+[33m81cdb19[m repositorio de instruções para execução do bot - GP ecom
+[33mab9f8de[m botoes atualizados, fluxo normal reastaurado
+[33m63547f7[m primeira funcao verificar conexao
+[33ma9a5c8b[m versao estavel e funcional 04.05.10
+[33m899cfa6[m pula != pendente corretamente, corrige erro municipio, reporta erros em lista, estável, arquivo criado area de trabalho
+[33m4caa7a0[m pendentes/erro municipio/report erros/ so pendentes
+[33m85fb29c[m saímos do caso onde tudo é ero de municipio + acao de clicar botao sxalvar encapsulada em uma funçao
+[33m368b018[m funcao erro_municipio criada e atualizada + em caso de erro municipio salvamento é garantido + condicional de erro de nota fiscal atualizada
+[33m8226077[m leitura erro municipio.-abre o campo de edição de dados cliente
+[33m5bb630d[m upload funciona em notas com erros previamente
+[33m7d3d929[m update endpoint - se tiver duas notas ausentes consecutivas
+[33m8f227f5[m versao estavel pula aguarda protocolo 12.09.2024
+[33m8f70627[m versao estavel - corrigir checkboxes, usar em 4 pcs
+[33m2b250ea[m bug na tela de priduto - xpath updates
+[33m16485f0[m funcional full
+[33m15d8d48[m mandar hayla
+[33m5af1926[m atualizacao
+[33m07aaf1e[m looping condigiconal
+[33m4a26564[m looping e condicional
+[33m17912a8[m xpath de copia atualizado
+[33mac0ff51[m brecou na selecao do produto/copiar campo
+[33maa595c2[m first commit
+[33md213cbb[m teste oficial
+[33md6a80f3[m tafluindo
