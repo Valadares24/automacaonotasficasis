@@ -64,12 +64,9 @@ async def selecionar_checkbox_e_campo(page, index):
         status_campo_situacao = await page.inner_text(campo_situacao_selector)
         print(f"Status da nota fiscal {index}: {status_campo_situacao}")
 
-
         if status_campo_situacao == "Pendente":
             print("status pendente - abrir e editar nota")
             checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"  
-            #await page.wait_for_selector(checkbox_selector, state = "clickable", timeout = 30000)
-
             if await page.is_visible(checkbox_selector):
                 print('elemento existe')
                 await page.locator(checkbox_selector).click()
@@ -82,7 +79,7 @@ async def selecionar_checkbox_e_campo(page, index):
             
             return True, index, checkbox_selector
             
-        else:
+        elif status_campo_situacao != "Pendente":
             print("nota pulada, não editada - status dif pendente")
             return False, index + 1, None
             
@@ -144,8 +141,6 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         #colar codigo
         try:
             colar_cod= '#edDescricao'
-            await page.locator(colar_cod).wait_for(state="visible", timeout = 500) and await page.locator(colar_cod).is_enabled()
-
             if await page.locator(colar_cod).is_enabled():
                 await page.fill(colar_cod, str(texto))
                 print(f"codigo produto: {colar_cod}")

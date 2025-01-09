@@ -22,9 +22,9 @@ async def iniciar_browser():
 async def login_bling(page):
     try:
 
-        await page.locator("#username").fill("financeiro@goiaspet.com.br")
+        await page.locator("#username").fill("gp.beauty.2024@gmail.com")
 
-        await page.locator("#login > div > div.login-content.u-flex.u-flex-col.u-items-center > div > div.password-container.u-self-stretch > div > input").fill("gp-matriz_s2-BLg")
+        await page.locator("#login > div > div.login-content.u-flex.u-flex-col.u-items-center > div > div.password-container.u-self-stretch > div > input").fill("gP-beat-s2_BLg")
 
         await page.locator("role=button[name='Entrar']").click()
         
