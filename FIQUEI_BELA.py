@@ -22,9 +22,9 @@ async def iniciar_browser():
 async def login_bling(page):
     try:
 
-        await page.locator("#username").fill("financeiro@goiaspet.com.br")
+        await page.locator("#username").fill("gp.beauty.2024@gmail.com")
 
-        await page.locator("#login > div > div.login-content.u-flex.u-flex-col.u-items-center > div > div.password-container.u-self-stretch > div > input").fill("gp-matriz_s2-BLg")
+        await page.locator("#login > div > div.login-content.u-flex.u-flex-col.u-items-center > div > div.password-container.u-self-stretch > div > input").fill("gP-beat-s2_BLg")
 
         await page.locator("role=button[name='Entrar']").click()
         
@@ -64,8 +64,6 @@ async def selecionar_checkbox_e_campo(page, index):
         status_campo_situacao = await page.inner_text(campo_situacao_selector)
         print(f"Status da nota fiscal {index}: {status_campo_situacao}")
 
-        await page.wait_for_selector(checkbox_selector, state = "clickable", timeout = 30000)
-
         if status_campo_situacao == "Pendente":
             print("status pendente - abrir e editar nota")
             checkbox_selector = f"tr:nth-child({index}) > td.checkbox-item > div > label"  
@@ -81,7 +79,7 @@ async def selecionar_checkbox_e_campo(page, index):
             
             return True, index, checkbox_selector
             
-        else:
+        elif status_campo_situacao != "Pendente":
             print("nota pulada, não editada - status dif pendente")
             return False, index + 1, None
             
@@ -233,7 +231,7 @@ async def emitir_nota_fiscal(page, index):
 
         time.sleep(2)
         print("clicking prin#2 RN")
-        await page.wait_for_selector(imprimir_nota_selector, state = "Enabled", timeout = 30000)
+        await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout = 30000)
         #if await page.is_visible(imprimir_nota_selector):
         await page.click(imprimir_nota_selector)
              #issue: selector updated incorrectly
@@ -312,7 +310,8 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
                 
             else:
                 await emitir_nota_fiscal(page, index)
-                await avaliar_impressao(page, index, checkbox_selector)
+                if await avaliar_impressao(page, index, checkbox_selector):
+                    await page.click(checkbox_selector)
         return False, novo_index
     except Exception as e:
         print(f"Erro ao processar a nota fiscal {index}: {e}")
