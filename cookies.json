@@ -1,1 +1,0 @@
-[{"domain": "www.bling.com.br", "expiry": 1718025847, "httpOnly": false, "name": "cf_chl_rc_ni", "path": "/", "sameSite": "None", "secure": true, "value": "5"}, {"domain": "www.bling.com.br", "httpOnly": true, "name": "PHPSESSID", "path": "/", "sameSite": "Lax", "secure": true, "value": "og27hm5kh2846rah3c3ufd75n6"}]
