@@ -125,6 +125,9 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
             await erro_editar_item(page, index, checkbox_selector)
             return False
 
+
+        time.sleep(1.8)
+
         try:
         #copiar codigo
             codigo_prod = "#edCodigo"#declaração de variável
@@ -144,7 +147,7 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
             if await page.locator(colar_cod).is_enabled():
                 await page.fill(colar_cod, str(texto))
                 print(f"codigo produto: {colar_cod}")
-                time.sleep(2)
+                time.sleep(4)
                 await page.locator(colar_cod).press('Enter')
         except Exception as e:
             print(f"Erro ao processar o item: {e}")
@@ -153,6 +156,7 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         
 
         # Preencher CFOP
+        time.sleep(1)
         try:
             cfop_selector = "#edCfop"
             if await page.is_visible(cfop_selector):
@@ -192,7 +196,7 @@ async def salvar_alteracoes_nota(page):
     try:
         salvar_nota_selector = "#botaoSalvar"
         await page.click(salvar_nota_selector)
-        time.sleep(4) 
+        time.sleep(3) 
         print("Alterações da nota fiscal salvas com sucesso.")
     except Exception as e:
         print(f"Erro ao salvar alterações da nota: {e}")
