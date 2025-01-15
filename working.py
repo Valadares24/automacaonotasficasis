@@ -51,7 +51,7 @@ async def filtrar_notas(page):
     await page.keyboard.press('Enter')
     #await page.locator("span.InputDropdown-text", has_text = "Selecione uma opção").click(force=True)
     await page.locator("#filter-button-area").get_by_text("Filtrar").click()
-    time.sleep(10)
+    time.sleep(6)
 
 print(checkbox_selector)
 
@@ -89,6 +89,7 @@ async def selecionar_checkbox_e_campo(page, index):
         return False, index + 1, None
 
 async def processar_itens_nota(page, cfop, index):
+    
     try:
         print("Iniciando o processamento dos itens da nota fiscal...")
 
@@ -111,7 +112,11 @@ async def processar_itens_nota(page, cfop, index):
         
 
 async def processar_item(page, cfop, item_selector, index, checkbox_selector):
+    
+
     try:
+       
+
         print(f"Processando item com selector: {item_selector}")
         
         # Limpar campo de desconto
@@ -125,8 +130,15 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
             await erro_editar_item(page, index, checkbox_selector)
             return False
 
+        valor_unitario = '#edValorUnitario'
+        antigo_valor_unitario_selector = await page.input_value(valor_unitario)
+        antigo_valor_unitario_selector_float = float(antigo_valor_unitario_selector.replace(",", ".").strip())
+        print(antigo_valor_unitario_selector_float)
+        #valor = await  page.input_value(valor_unitario)
+        print(f'valor unitário antes da edição da nota: {antigo_valor_unitario_selector_float}')
 
-        time.sleep(1.8)
+
+        time.sleep(2)
 
         try:
         #copiar codigo
@@ -143,12 +155,38 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
 
         #colar codigo
         try:
+            
             colar_cod= '#edDescricao'
-            if await page.locator(colar_cod).is_enabled():
+            if await page.locator(colar_cod).is_visible() and await page.locator(colar_cod).is_enabled():
+                await page.locator(colar_cod).fill("")
                 await page.fill(colar_cod, str(texto))
                 print(f"codigo produto: {colar_cod}")
                 time.sleep(4)
+                #codigo_preenchido = await page.input_value(colar_cod)
                 await page.locator(colar_cod).press('Enter')
+                print('produto selecionado')
+                time.sleep(4)
+                novo_valor_unitario = '#edValorUnitario'
+                novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
+                novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
+
+                print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')
+                print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
+                
+                
+            if  novo_valor_unitario_selector_float <  antigo_valor_unitario_selector_float:
+                print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
+                print(f"Valor atualizado com sucesso")
+                
+                
+            else:
+                print("valor unitario nao atualizado")
+                await erro_editar_item(page, index, checkbox_selector)
+                time.sleep(4)
+                return False
+                
+                
+                
         except Exception as e:
             print(f"Erro ao processar o item: {e}")
             await erro_editar_item(page, index, checkbox_selector)
@@ -156,7 +194,8 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         
 
         # Preencher CFOP
-        time.sleep(1)
+        
+        
         try:
             cfop_selector = "#edCfop"
             if await page.is_visible(cfop_selector):
@@ -295,7 +334,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
         print(f"Returned values - nota_selecionada: {nota_selecionada}, novo_index: {novo_index}, checkbox_selector: {checkbox_selector}")
 
         if nota_selecionada:
-            cep_selector = "input#etiqueta_cep"
+            cep_selector = "#etiqueta_cep"
             print(cep_selector)
             time.sleep(2)
             cep_text = await page.input_value(cep_selector)
