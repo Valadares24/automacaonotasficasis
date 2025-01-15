@@ -154,9 +154,12 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
             return False
 
         #colar codigo
+
         try:
             
             colar_cod= '#edDescricao'
+            nome_prod= await page.inner_text(colar_cod)
+            print (nome_prod)
             if await page.locator(colar_cod).is_visible() and await page.locator(colar_cod).is_enabled():
                 await page.locator(colar_cod).fill("")
                 await page.fill(colar_cod, str(texto))
