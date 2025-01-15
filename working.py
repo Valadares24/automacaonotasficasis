@@ -158,38 +158,31 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         try:
             
             colar_cod= '#edDescricao'
-            nome_prod= await page.inner_text(colar_cod)
+            nome_prod= await page.input_value(colar_cod)
             print (nome_prod)
             if await page.locator(colar_cod).is_visible() and await page.locator(colar_cod).is_enabled():
                 await page.locator(colar_cod).fill("")
                 await page.fill(colar_cod, str(texto))
                 print(f"codigo produto: {colar_cod}")
-                time.sleep(4)
+                time.sleep(2)
                 #codigo_preenchido = await page.input_value(colar_cod)
                 await page.locator(colar_cod).press('Enter')
                 print('produto selecionado')
-                time.sleep(4)
-                novo_valor_unitario = '#edValorUnitario'
-                novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
-                novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
-
+                #time.sleep(4)
+                novo_nome_produto = await page.input_value(colar_cod)
+                print(novo_nome_produto)
+                if nome_prod == novo_nome_produto:
+                    print(f'produto selecionado com sucesso: {nome_prod} = {novo_nome_produto}')
+                else:
+                    print("valor unitario nao atualizado")
+                    await erro_editar_item(page, index, checkbox_selector)
+                    time.sleep(3)
+                    return False
+            
                 print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')
-                print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
+               
                 
-                
-            if  novo_valor_unitario_selector_float <  antigo_valor_unitario_selector_float:
-                print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
-                print(f"Valor atualizado com sucesso")
-                
-                
-            else:
-                print("valor unitario nao atualizado")
-                await erro_editar_item(page, index, checkbox_selector)
-                time.sleep(4)
-                return False
-                
-                
-                
+                 
         except Exception as e:
             print(f"Erro ao processar o item: {e}")
             await erro_editar_item(page, index, checkbox_selector)
@@ -197,6 +190,20 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         
 
         # Preencher CFOP
+        time.sleep(2)   
+        novo_valor_unitario = '#edValorUnitario'
+        novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
+        novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
+        print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
+        
+        if  novo_valor_unitario_selector_float <  antigo_valor_unitario_selector_float:
+            print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
+            print(f"Valor atualizado com sucesso")    
+        else:
+            print("valor unitario nao atualizado")
+            await erro_editar_item(page, index, checkbox_selector)
+            time.sleep(4)
+            return False  
         
         
         try:
