@@ -133,7 +133,6 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         valor_unitario = '#edValorUnitario'
         antigo_valor_unitario_selector = await page.input_value(valor_unitario)
         antigo_valor_unitario_selector_float = float(antigo_valor_unitario_selector.replace(",", ".").strip())
-        print(antigo_valor_unitario_selector_float)
         #valor = await  page.input_value(valor_unitario)
         print(f'valor unitário antes da edição da nota: {antigo_valor_unitario_selector_float}')
 
@@ -143,11 +142,19 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         try:
         #copiar codigo
             codigo_prod = "#edCodigo"#declaração de variável
-            if await page.is_visible(codigo_prod):#condição de espera para elemento visivel
-                texto = await page.locator(codigo_prod).input_value()
-                print(f"codigo produto: {texto}")
+            if await page.is_visible(codigo_prod) and await page.locator(codigo_prod).is_enabled():#condição de espera para elemento visivel
+                codigo_copiado = await page.locator(codigo_prod).input_value()
+
+                if codigo_copiado.strip() == "": #make sure it is not empty/garantindo que nao ta vazio
+                    raise ValueError("O valor nao foi copiado, está em branco")
+                else:
+                    print(f'o codigo do produto foi copiado com sucesso e é: {codigo_copiado}')    
+                
+                #print(f"codigo produto: {codigo_copiado}")
             else:
-                print('Elemento nao visivel')
+                print('Elemento nao visivel ou habilitado')
+                await erro_editar_item(page, index, checkbox_selector)
+                return False
         except Exception as e:
             print(f"Erro ao copiar codigo do item: {e}")
             await erro_editar_item(page, index, checkbox_selector)
@@ -157,19 +164,29 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
 
         try:
             
-            colar_cod= '#edDescricao'
-            nome_prod= await page.input_value(colar_cod)
+            campo_colar_cod= '#edDescricao'
+            nome_prod= await page.input_value(campo_colar_cod)
             print (nome_prod)
-            if await page.locator(colar_cod).is_visible() and await page.locator(colar_cod).is_enabled():
-                await page.locator(colar_cod).fill("")
-                await page.fill(colar_cod, str(texto))
-                print(f"codigo produto: {colar_cod}")
+            if await page.locator(campo_colar_cod).is_visible() and await page.locator(campo_colar_cod).is_enabled():
+                await page.locator(campo_colar_cod).fill("")
+                await page.fill(campo_colar_cod, str(codigo_copiado))
+                print(f"codigo produto: {campo_colar_cod}")
+                codigo_colado = await page.input_value(campo_colar_cod)
+                print(f'o valor do campo apos o codigo ter sido colado é: {codigo_colado}')
                 time.sleep(2)
-                #codigo_preenchido = await page.input_value(colar_cod)
-                await page.locator(colar_cod).press('Enter')
+                if codigo_colado == codigo_copiado:
+                    print(f'codigo copiado e colado com sucesso: {codigo_copiado} é o mesmo {codigo_colado}')
+                else:
+                    print(f'os codigos sao diferentes: {codigo_copiado} != {codigo_colado}')
+                    await erro_editar_item(page, index, checkbox_selector)
+                    time.sleep(3)
+                    return False
+
+
+                await page.locator(campo_colar_cod).press('Enter')
                 print('produto selecionado')
-                #time.sleep(4)
-                novo_nome_produto = await page.input_value(colar_cod)
+                time.sleep(1.5)
+                novo_nome_produto = await page.input_value(campo_colar_cod)
                 print(novo_nome_produto)
                 if nome_prod == novo_nome_produto:
                     print(f'produto selecionado com sucesso: {nome_prod} = {novo_nome_produto}')
@@ -190,13 +207,18 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
         
 
         # Preencher CFOP
-        time.sleep(2)   
+        #time.sleep(2)   
         novo_valor_unitario = '#edValorUnitario'
         novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
+        print(novo_valor_unitario_selector)
         novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
+        print(f' valor antigo é {antigo_valor_unitario_selector} e do tipo: {type(antigo_valor_unitario_selector_float)}')
+        print(f' valor novo é {novo_valor_unitario_selector_float} e do tipo: {type(novo_valor_unitario_selector_float)}')
+
+
         print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
         
-        if  novo_valor_unitario_selector_float <  antigo_valor_unitario_selector_float:
+        if  round(novo_valor_unitario_selector_float, 2) <  round(antigo_valor_unitario_selector_float, 2):
             print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
             print(f"Valor atualizado com sucesso")    
         else:
@@ -276,7 +298,7 @@ async def emitir_nota_fiscal(page, index):
     try:
         enviar_nota_selector = "#container > div.side.new-box-side > div.new-side-bar-full > div > div.main-actions > button:nth-child(1) > span.action-text.hide-on-minimize"
         imprimir_nota_selector = "#notaAcao"
-        #texto_verificar = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
+        #codigo_copiado_verificar = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
 
         if await page.is_visible(enviar_nota_selector):
             await page.click(enviar_nota_selector)
@@ -370,7 +392,7 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
         return True, index + 1
 
 def determinar_cfop(cep_text):
-    #capturando o texto de um lugar vazio
+    #capturando o codigo_copiado de um lugar vazio
     cep_prefix = cep_text[:5]
     cep_num = int(cep_prefix)
     print(f"CEP numérico: {cep_num}")
