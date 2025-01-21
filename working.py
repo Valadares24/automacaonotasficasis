@@ -164,42 +164,43 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
 
         try:
             
-            campo_colar_cod= '#edDescricao'
-            nome_prod= await page.input_value(campo_colar_cod)
+            campo_colar_cod= '#edDescricao'                #VARIAVEL CRIADA
+            nome_prod= await page.input_value(campo_colar_cod)         #VARIAVEL CRIADA
             print (nome_prod)
-            if await page.locator(campo_colar_cod).is_visible() and await page.locator(campo_colar_cod).is_enabled():
-                await page.locator(campo_colar_cod).fill("")
+            if await page.locator(campo_colar_cod).is_visible() and await page.locator(campo_colar_cod).is_enabled():#visivel e habilitado
+                await page.locator(campo_colar_cod).fill("")#ancorar condicional no estado em branco
                 await page.fill(campo_colar_cod, str(codigo_copiado))
-                print(f"codigo produto: {campo_colar_cod}")
-                codigo_colado = await page.input_value(campo_colar_cod)
+                print(f"codigo produto: {campo_colar_cod}")#codigo numerico
+                codigo_colado = await page.input_value(campo_colar_cod)#codigo numerico colado para verificação de pasting  #VARIAVEL CRIADA
                 print(f'o valor do campo apos o codigo ter sido colado é: {codigo_colado}')
                 time.sleep(2)
-                if codigo_colado == codigo_copiado:
+                #await page.wait_for_function(f""" const field = document.querySelector('{codigo_colado}'); field && field.value === '{codigo_copiado}' """, timeout = 5000 )
+                if codigo_colado == codigo_copiado:#verificacao de colagem - os codigos sao os mesmos ou n
                     print(f'codigo copiado e colado com sucesso: {codigo_copiado} é o mesmo {codigo_colado}')
                 else:
                     print(f'os codigos sao diferentes: {codigo_copiado} != {codigo_colado}')
                     await erro_editar_item(page, index, checkbox_selector)
                     time.sleep(3)
                     return False
-
-
+      #se os codigos colados sao os mesmos, agora o ponto é verificar a presença do nome do produto, e não o estado vazio - a colagem do codigo está respaldada de fato?
+                
                 await page.locator(campo_colar_cod).press('Enter')
                 print('produto selecionado')
                 time.sleep(1.5)
                 novo_nome_produto = await page.input_value(campo_colar_cod)
                 print(novo_nome_produto)
+
+                
+
                 if nome_prod == novo_nome_produto:
                     print(f'produto selecionado com sucesso: {nome_prod} = {novo_nome_produto}')
                 else:
-                    print("valor unitario nao atualizado")
+                    print("nome do produto  nao atualizado")
                     await erro_editar_item(page, index, checkbox_selector)
                     time.sleep(3)
                     return False
             
-                print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')
-               
-                
-                 
+                print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')            
         except Exception as e:
             print(f"Erro ao processar o item: {e}")
             await erro_editar_item(page, index, checkbox_selector)
@@ -267,8 +268,8 @@ async def salvar_alteracoes_nota(page):
     try:
         salvar_nota_selector = "#botaoSalvar"
         await page.click(salvar_nota_selector)
-        time.sleep(3) 
-        print("Alterações da nota fiscal salvas com sucesso.")
+        #time.sleep(3) 
+        print("pressionado botao de salvamento da nota com sucesso.")
     except Exception as e:
         print(f"Erro ao salvar alterações da nota: {e}")
         botao_cancelar = "#botaoCancelar"
@@ -277,18 +278,26 @@ async def salvar_alteracoes_nota(page):
         
 async def verificar_erro_salvamento(page, index, checkbox_selector):
     try:
-        mensagem_erro_selector = "#mensagem p"
-        mensagem_erro = await page.inner_text(mensagem_erro_selector)
+        mensagem_erro_selector = "#mensagem > p:nth-child(2)"
+
+        await page.wait_for_selector(mensagem_erro_selector, state = 'visible', timeout=500)
+        mensagem_erro = (await page.inner_text(mensagem_erro_selector)).strip()
+
+        print(mensagem_erro)
 
         if "Não foi possível salvar a Nota Fiscal" in mensagem_erro:
             print("Erro no salvamento")
-            #mensagem_erro = await page.inner_text(mensagem_erro_selector)
-            #await cancelar_nota(page, checkbox_selector, index)
-            print(f"Mensagem de erro detectada: {mensagem_erro}")
+            retorno_erro_especifico = await page.inner_text('#mensagem > ul > li')
+            #print(retorno_erro_especifico)
+            lista_erros.append(retorno_erro_especifico)
+            print(f"Mensagem de erro detectada: {retorno_erro_especifico}")
             return True
+            #await cancelar_nota(page, checkbox_selector, index)
+            #mensagem_erro = await page.inner_text(mensagem_erro_selector)
         else: 
             print("Nenhum erro detectado após salvar a nota.")
             return False
+
                 
     except Exception as e:
         print(f"Erro ao verificar mensagem de erro: {e}")
@@ -300,20 +309,23 @@ async def emitir_nota_fiscal(page, index):
         imprimir_nota_selector = "#notaAcao"
         #codigo_copiado_verificar = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
 
-        if await page.is_visible(enviar_nota_selector):
+        #await page.wait_for_function (""" const field = document.querySelector('#notaAcao); return field && field.value """)
+        if await page.wait_for_selector(enviar_nota_selector, state = 'visible', timeout=40000):
             await page.click(enviar_nota_selector)
             print("Nota fiscal enviada com sucesso.")
 
         time.sleep(2)
         print("clicking prin#2 RN")
-        await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout = 30000)
+        await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout=4000)
+
+        if page.locator(imprimir_nota_selector).is_enabled:
         #if await page.is_visible(imprimir_nota_selector):
-        await page.click(imprimir_nota_selector)
+            await page.click(imprimir_nota_selector)
              #issue: selector updated incorrectly
-        print("clicked")
+            print("clicked")
         #await asyncio.sleep(10)
-        '''else:
-            print("failed click")'''        
+        else:
+            print("failed click")        
 
     except Exception as e:
         print(f"Erro ao emitir a nota fiscal {index}: {e}")
@@ -381,11 +393,13 @@ async def processar_nota_fiscal(page, index, checkbox_selector):
                 await page.click(botao_cancelar)
                 print("emissão de nota nota cancelada")
                 await page.click(checkbox_selector)
+                print('seletor desmarcado')
                 return False, index + 1
                 
             else:
                 await emitir_nota_fiscal(page, index)
                 await avaliar_impressao(page, index, checkbox_selector)
+                print('impressao concluida normalmente - item sem necessidade de uncheck')
         return False, novo_index
     except Exception as e:
         print(f"Erro ao processar a nota fiscal {index}: {e}")
@@ -425,6 +439,7 @@ async def main():
                 print(f"Nota fiscal {index} não encontrada. Consecutivas: {notas_inexistentes_consecutivas}")
                 if notas_inexistentes_consecutivas >= 2:
                     print("Encerrando script: Não há mais notas fiscais para processar.")
+                    print(lista_erros)
                     break
                 index += 1
                 continue
@@ -444,6 +459,7 @@ async def main():
 
     print(f"Notas fiscais processadas com sucesso: {success_count}")
     print(f"Notas fiscais com erro: {error_count}")
+    print(lista_erros)
 
     await browser.close()
 
