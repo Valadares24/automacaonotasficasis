@@ -336,7 +336,7 @@ async def avaliar_impressao(page,index, checkbox_selector):
     x_final = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-titlebar.ui-corner-all.ui-widget-header.ui-helper-clearfix > button"
 
     try:
-        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=30000)
+        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=90000)
         mensagem = (await page.inner_text(mensagem_impressao)).strip()
         print(mensagem)
         time.sleep(1)
@@ -360,16 +360,6 @@ async def avaliar_impressao(page,index, checkbox_selector):
         print(f"erro ao avaliar a impressão: {e}")
         return False, index
 
-'''async def cancelar_nota(page, checkbox_selector, index):
-    try:
-        botao_cancelar = "#botaoCancelar"
-        await page.click(botao_cancelar)
-        print("emissão de nota nota cancelada")
-        await page.click(checkbox_selector)
-        return True, index + 1
-    except Exception as e:
-        print('erro ao clicar no botao de cancelamento')
-print(checkbox_selector)'''
 
 async def processar_nota_fiscal(page, index, checkbox_selector):
     try:
