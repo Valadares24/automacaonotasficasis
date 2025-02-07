@@ -269,7 +269,6 @@ async def salvar_alteracoes_nota(page):
         await page.click(salvar_nota_selector)
         #time.sleep(3) 
         print("pressionado botao de salvamento da nota com sucesso.")
-        await verificar_erro_salvamento(page)
     except Exception as e:
         print(f"Erro ao salvar alterações da nota: {e}")
         botao_cancelar = "#botaoCancelar"
@@ -288,11 +287,13 @@ async def verificar_erro_salvamento(page):
         mensagem_erro_locator =  page.locator("#mensagem > p:nth-child(2)")#seletor atualizado com  await page.locator
 
         await mensagem_erro_locator.wait_for(state = 'visible', timeout=9000)#testando visibilidade do elemento apontando diretamente para a variavel
-        for i in range(3):
-            try
-            mensagem_erro = await mensagem_erro_locator.inner_text()#usando tecnicas mistas, cuidado
-            if mensagem_erro.strip():
-                break
+        for _ in range(3):
+            try:
+                mensagem_erro = await mensagem_erro_locator.inner_text()#usando tecnicas mistas, cuidado
+                if mensagem_erro.strip():
+                    break
+            except Exception as e:
+                print(f'erro ao capturar mensagem de erro')
             await page.wait_for_timeout(1000)
 
         print(f'resultado verificação de erro: {mensagem_erro}')
@@ -300,7 +301,7 @@ async def verificar_erro_salvamento(page):
 
         if "Não foi possível salvar a Nota Fiscal" in mensagem_erro:#NAO ESTA FUNCIONANDO CORRETAMENTE
             print("Erro no salvamento detectado corretamente")
-            #await verificar_tipo_erro(page)
+            await verificar_tipo_erro(page)
             return True
         else: 
             print("Nenhum erro detectado após salvar a nota.")
@@ -368,7 +369,7 @@ async def avaliar_impressao(page,index, checkbox_selector):
     x_final = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-titlebar.ui-corner-all.ui-widget-header.ui-helper-clearfix > button"
 
     try:
-        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=90000)
+        await page.wait_for_selector(mensagem_impressao, state="visible", timeout=120000)
         mensagem = (await page.inner_text(mensagem_impressao)).strip()
         print(mensagem)
         time.sleep(1)
@@ -481,8 +482,9 @@ async def main():
     print(f"Notas fiscais processadas com sucesso: {success_count}")
     print(f"Notas fiscais com erro: {error_count}")
     print(lista_erros)
+    print(mensagens_erro)
 
-    await browser.close()
+    await browser.close()   
 
 if __name__ == "__main__":
     asyncio.run(main())
