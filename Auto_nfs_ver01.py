@@ -114,141 +114,147 @@ async def processar_itens_nota(page, cfop, index):
         
 
 async def processar_item(page, cfop, item_selector, index, checkbox_selector):
-    
-
-    try:
-       
-
-        print(f"Processando item com selector: {item_selector}")
-        
-        # Limpar campo de desconto
-        try:
-            desconto_selector = "#edValorDescontoItem"#criação variavel
-            if await page.is_visible(desconto_selector):#condição de espera para elemento ser visivel
-                await page.fill(desconto_selector, "")#espera e comando de ação
-                print("Desconto removido com sucesso.")#retorno explicito
-        except Exception as e:
-            print(f"Erro ao apagar o desconto do item: {e}")
-            await erro_editar_item(page, index, checkbox_selector)
-            return False
-
-        valor_unitario = '#edValorUnitario'
-        antigo_valor_unitario_selector = await page.input_value(valor_unitario)
-        antigo_valor_unitario_selector_float = float(antigo_valor_unitario_selector.replace(",", ".").strip())
-        #valor = await  page.input_value(valor_unitario)
-        print(f'valor unitário antes da edição da nota: {antigo_valor_unitario_selector_float}')
-
-
-        time.sleep(2)
-
-        try:
-        #copiar codigo
-            codigo_prod = "#edCodigo"#declaração de variável
-            if await page.is_visible(codigo_prod) and await page.locator(codigo_prod).is_enabled():#condição de espera para elemento visivel
-                codigo_copiado = await page.locator(codigo_prod).input_value()
-
-                if codigo_copiado.strip() == "": #make sure it is not empty/garantindo que nao ta vazio
-                    raise ValueError("O valor nao foi copiado, está em branco")
-                else:
-                    print(f'o codigo do produto foi copiado com sucesso e é: {codigo_copiado}')    
-                
-                #print(f"codigo produto: {codigo_copiado}")
-            else:
-                print('Elemento nao visivel ou habilitado')
-                await erro_editar_item(page, index, checkbox_selector)
-                return False
-        except Exception as e:
-            print(f"Erro ao copiar codigo do item: {e}")
-            await erro_editar_item(page, index, checkbox_selector)
-            return False
-
-        #colar codigo
-
-        try:
-            
-            campo_colar_cod= '#edDescricao'                #VARIAVEL CRIADA
-            nome_prod= await page.input_value(campo_colar_cod)         #VARIAVEL CRIADA
-            print (nome_prod)
-            if await page.locator(campo_colar_cod).is_visible() and await page.locator(campo_colar_cod).is_enabled():#visivel e habilitado
-                await page.locator(campo_colar_cod).fill("")#ancorar condicional no estado em branco
-                await page.fill(campo_colar_cod, str(codigo_copiado))
-                print(f"codigo produto: {campo_colar_cod}")#codigo numerico
-                codigo_colado = await page.input_value(campo_colar_cod)#codigo numerico colado para verificação de pasting  #VARIAVEL CRIADA
-                print(f'o valor do campo apos o codigo ter sido colado é: {codigo_colado}')
-                time.sleep(5)
-                #await page.wait_for_function(f""" const field = document.querySelector('{codigo_colado}'); field && field.value === '{codigo_copiado}' """, timeout = 5000 )
-                if codigo_colado == codigo_copiado:#verificacao de colagem - os codigos sao os mesmos ou n
-                    print(f'codigo copiado e colado com sucesso: {codigo_copiado} é o mesmo {codigo_colado}')
-                else:
-                    print(f'os codigos sao diferentes: {codigo_copiado} != {codigo_colado}')
-                    await erro_editar_item(page, index, checkbox_selector)
-                    time.sleep(3)
-                    return False
-      #se os codigos colados sao os mesmos, agora o ponto é verificar a presença do nome do produto, e não o estado vazio - a colagem do codigo está respaldada de fato?
-                
-                await page.locator(campo_colar_cod).press('Enter')
-                print('produto selecionado')
-                time.sleep(3)
-                novo_nome_produto = await page.input_value(campo_colar_cod)
-                print(novo_nome_produto)
-
-                
-
-                if nome_prod == novo_nome_produto:
-                    print(f'produto selecionado com sucesso: {nome_prod} = {novo_nome_produto}')
-                else:
-                    print("nome do produto  nao atualizado")
-                    await erro_editar_item(page, index, checkbox_selector)
-                    time.sleep(3)
-                    return False
-            
-                print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')            
-        except Exception as e:
-            print(f"Erro ao processar o item: {e}")
-            await erro_editar_item(page, index, checkbox_selector)
-            return False
-        
-
-        # Preencher CFOP
-        #time.sleep(2)   
-        novo_valor_unitario = '#edValorUnitario'
-        novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
-        print(novo_valor_unitario_selector)
-        novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
-        print(f' valor antigo é {antigo_valor_unitario_selector} e do tipo: {type(antigo_valor_unitario_selector_float)}')
-        print(f' valor novo é {novo_valor_unitario_selector_float} e do tipo: {type(novo_valor_unitario_selector_float)}')
-
-
-        print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
-        
-        if  round(novo_valor_unitario_selector_float, 2) <  round(antigo_valor_unitario_selector_float, 2):
-            print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
-            print(f"Valor atualizado com sucesso")    
-        else:
-            print("valor unitario nao atualizado")
-            await erro_editar_item(page, index, checkbox_selector)
-            time.sleep(4)
-            return False  
-        
-        
-        try:
-            cfop_selector = "#edCfop"
-            if await page.is_visible(cfop_selector):
-                await page.fill(cfop_selector, str(cfop))
-                print(f"CFOP preenchido: {cfop}")
-        except Exception as e:
-            print(f"Erro ao processar o item: {e}")
-            await erro_editar_item(page, index, checkbox_selector)
-            return False
-        
-     # Salvar alteraçõesTimeoutError
+    cfop_campo_verificar = "#edCfop"
+    cfop_verificado = await page.input_value(cfop_campo_verificar)
+    print(f'valor do cfop: {cfop_verificado}')
+    if cfop_verificado.strip() != "":
+        print('o cfop desta nota não esta vazio, nota já editada')
         await salvar_alteracoes_item(page)
         return True
+    else:
+        try:
+            print(f"Processando item com selector: {item_selector}")
+            
+            # Limpar campo de desconto
+            try:
+                desconto_selector = "#edValorDescontoItem"#criação variavel
+                if await page.is_visible(desconto_selector):#condição de espera para elemento ser visivel
+                    await page.fill(desconto_selector, "")#espera e comando de ação
+                    print("Desconto removido com sucesso.")#retorno explicito
+            except Exception as e:
+                print(f"Erro ao apagar o desconto do item: {e}")
+                await erro_editar_item(page, index, checkbox_selector)
+                return False
 
-    except Exception as e:
-        print(f"Erro ao processar o item: {e}")
-        await erro_editar_item(page, index, checkbox_selector)
-        return False
+            valor_unitario = '#edValorUnitario'
+            antigo_valor_unitario_selector = await page.input_value(valor_unitario)
+            antigo_valor_unitario_selector_float = float(antigo_valor_unitario_selector.replace(",", ".").strip())
+            #valor = await  page.input_value(valor_unitario)
+            print(f'valor unitário antes da edição da nota: {antigo_valor_unitario_selector_float}')
+
+
+            time.sleep(2)
+
+            try:
+            #copiar codigo
+                codigo_prod = "#edCodigo"#declaração de variável
+                if await page.is_visible(codigo_prod) and await page.locator(codigo_prod).is_enabled():#condição de espera para elemento visivel
+                    codigo_copiado = await page.locator(codigo_prod).input_value()
+
+                    if codigo_copiado.strip() == "": #make sure it is not empty/garantindo que nao ta vazio
+                        raise ValueError("O valor nao foi copiado, está em branco")
+                    else:
+                        print(f'o codigo do produto foi copiado com sucesso e é: {codigo_copiado}')    
+                    
+                    #print(f"codigo produto: {codigo_copiado}")
+                else:
+                    print('Elemento nao visivel ou habilitado')
+                    await erro_editar_item(page, index, checkbox_selector)
+                    return False
+            except Exception as e:
+                print(f"Erro ao copiar codigo do item: {e}")
+                await erro_editar_item(page, index, checkbox_selector)
+                return False
+
+            #colar codigo
+
+            try:
+                
+                campo_colar_cod = '#edDescricao'                #VARIAVEL CRIADA
+                nome_prod= await page.input_value(campo_colar_cod)         #VARIAVEL CRIADA
+                print (nome_prod)
+                if await page.locator(campo_colar_cod).is_visible() and await page.locator(campo_colar_cod).is_enabled():#visivel e habilitado
+                    await page.locator(campo_colar_cod).fill("")#ancorar condicional no estado em branco
+                    await page.fill(campo_colar_cod, str(codigo_copiado))
+                    print(f"codigo produto: {campo_colar_cod}")#codigo numerico
+                    codigo_colado = await page.input_value(campo_colar_cod)#codigo numerico colado para verificação de pasting  #VARIAVEL CRIADA
+                    print(f'o valor do campo apos o codigo ter sido colado é: {codigo_colado}')
+                    time.sleep(5)
+                    #await page.wait_for_function(f""" const field = document.querySelector('{codigo_colado}'); field && field.value === '{codigo_copiado}' """, timeout = 5000 )
+                    if codigo_colado == codigo_copiado:#verificacao de colagem - os codigos sao os mesmos ou n
+                        print(f'codigo copiado e colado com sucesso: {codigo_copiado} é o mesmo {codigo_colado}')
+                    else:
+                        print(f'os codigos sao diferentes: {codigo_copiado} != {codigo_colado}')
+                        await erro_editar_item(page, index, checkbox_selector)
+                        time.sleep(3)
+                        return False
+        #se os codigos colados sao os mesmos, agora o ponto é verificar a presença do nome do produto, e não o estado vazio - a colagem do codigo está respaldada de fato?
+                    
+                    await page.locator(campo_colar_cod).press('Enter')
+                    print('produto selecionado')
+                    time.sleep(3)
+                    novo_nome_produto = await page.input_value(campo_colar_cod)
+                    print(novo_nome_produto)
+
+                    
+
+                    if nome_prod == novo_nome_produto:
+                        print(f'produto selecionado com sucesso: {nome_prod} = {novo_nome_produto}')
+                    else:
+                        print("nome do produto  nao atualizado")
+                        await erro_editar_item(page, index, checkbox_selector)
+                        time.sleep(3)
+                        return False
+                
+                    print(f'o antigo valor unitario é:{antigo_valor_unitario_selector_float}')            
+            except Exception as e:
+                print(f"Erro ao processar o item: {e}")
+                await erro_editar_item(page, index, checkbox_selector)
+                return False
+            
+
+            # Preencher CFOP
+            #time.sleep(2)   
+            novo_valor_unitario = '#edValorUnitario'
+            novo_valor_unitario_selector = await page.input_value(novo_valor_unitario)
+            print(novo_valor_unitario_selector)
+            novo_valor_unitario_selector_float = float(novo_valor_unitario_selector.replace(",", ".").strip())
+            print(f' valor antigo é {antigo_valor_unitario_selector} e do tipo: {type(antigo_valor_unitario_selector_float)}')
+            print(f' valor novo é {novo_valor_unitario_selector_float} e do tipo: {type(novo_valor_unitario_selector_float)}')
+
+
+            print(f'o novo valor unitario é:{novo_valor_unitario_selector_float}')
+            
+            if  round(novo_valor_unitario_selector_float, 2) <  round(antigo_valor_unitario_selector_float, 2):
+                print(f'a diferenca e de: {antigo_valor_unitario_selector_float} - {novo_valor_unitario_selector_float}')
+                print(f"Valor atualizado com sucesso")    
+            else:
+                print("valor unitario nao atualizado")
+                await erro_editar_item(page, index, checkbox_selector)
+                time.sleep(4)
+                return False  
+            
+            
+            try:
+                cfop_selector = "#edCfop"
+                if await page.is_visible(cfop_selector):
+                    await page.fill(cfop_selector, str(cfop))
+                    print(f"CFOP preenchido: {cfop}")
+            except Exception as e:
+                print(f"Erro ao processar o item: {e}")
+                await erro_editar_item(page, index, checkbox_selector)
+                return False
+            
+            
+        # Salvar alteraçõesTimeoutError
+            await salvar_alteracoes_item(page)
+            return True
+
+        except Exception as e:
+            print(f"Erro ao processar o item: {e}")
+            await erro_editar_item(page, index, checkbox_selector)
+            return False
+        
 
 async def erro_editar_item(page, index, checkbox_selector):
     print("bloco de erro de edição de nota fiscal")
