@@ -255,7 +255,6 @@ async def processar_item(page, cfop, item_selector, index, checkbox_selector):
             await erro_editar_item(page, index, checkbox_selector)
             return False
         
-
 async def erro_editar_item(page, index, checkbox_selector):
     print("bloco de erro de edição de nota fiscal")
     cancelar_editar_item_nota = "body > div.ui-dialog.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.fixed.slideIn.ui-dialog-newest.open > div.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button"
@@ -331,10 +330,13 @@ async def verificar_tipo_erro(page):
     for element in mensagens_erro_selector:
         texto_especifico_erro = await element.inner_text()
         print(f'mensagem de erro capturada: {texto_especifico_erro}')
-        print(f'foram encontradas : {len(mensagens_erro)} mensagens de erro após tentativa de salvamento')
+        print(f'foram encontradas : {len(mensagens_erro)} mensagens de erro após tentativa de salvamento', sep = '_')
         mensagens_erro.append(texto_especifico_erro)
         return mensagens_erro    
-    
+    if 'município' or 'CEP' in texto_especifico_erro:#atualizacao de alcance de mensagem condicional
+        await corrigir_erro_municipio(page)
+        
+        
     #erro_especifico_capturado_texto = await page.inner_text(mensagens_erro)
     #lista_erros.append(mensagens_erro.strip())
     #print(f'os erros são: {erro_especifico_capturado_texto}')
@@ -343,6 +345,32 @@ async def verificar_tipo_erro(page):
     #     if"O valor do campo município não foi encontrado no sistema" in retorno_erro_especifico:
             #mensagem > ul > li:nth-child(1)
 
+async def corrigir_erro_municipio(page):
+        seletor_lapis_editar_dados_cliente_endereco = '#formNotaFiscal > div > div > div:nth-child(25) > div.vertical-align.align-input-icons > span > a:nth-child(3) > i'
+        seletor_lupa_cep = '#buscaCep > i'
+        seletor_campo_bairro = '#bairro'
+        seletor_campo_endereco = '#endereco'
+        seletor_campo_complemento = '#complemento'
+        seletor_botao_salvar = '#salvar-contato-rapido'
+
+
+        await page.locator(seletor_lapis_editar_dados_cliente_endereco).click()
+        print('seletor de edicao de endereco clicado')
+        await page.locator(seletor_lupa_cep).click()
+        print('seletor de lupa para pesquisa de cep pressionado')
+        await page.locator(seletor_campo_endereco).fill('nulo')
+        print('seletor de campo de endereço preenchido com "nulo"')
+        await page.locator(seletor_campo_complemento).fill('nulo')
+        print('seletor de campo de complemento preenchido com "nulo')
+        await page.locator(seletor_campo_bairro).fill('nulo')
+        print('seletor de campo de bairro preenchido com "nulo')
+        await page.locator(seletor_botao_salvar).click()
+        print('botao de salvamento de endereco clicado')
+
+
+
+
+
 async def emitir_nota_fiscal(page, index):
     try:
         enviar_nota_selector = "#container > div.side.new-box-side > div.new-side-bar-full > div > div.main-actions > button:nth-child(1) > span.action-text.hide-on-minimize"
@@ -350,13 +378,13 @@ async def emitir_nota_fiscal(page, index):
         #codigo_copiado_verificar = "#feedback_response_1 > div > div.AccordionPanel-header > div.AccordionPanel-label > div > span"
 
         #await page.wait_for_function (""" const field = document.querySelector('#notaAcao); return field && field.value """)
-        if await page.wait_for_selector(enviar_nota_selector, state = 'visible', timeout=40000):
+        if await page.wait_for_selector(enviar_nota_selector, state = 'visible', timeout=90000):
             await page.click(enviar_nota_selector)
             print("Nota fiscal enviada com sucesso.")
 
         time.sleep(2)
         print("clicking prin#2 RN")
-        await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout=4000)
+        await page.wait_for_selector(imprimir_nota_selector, state = "visible", timeout=40000)
 
         if page.locator(imprimir_nota_selector).is_enabled:
         #if await page.is_visible(imprimir_nota_selector):
@@ -386,7 +414,8 @@ async def avaliar_impressao(page,index, checkbox_selector):
             await page.locator(x_final).click()
             print("erro na impressão da nota - possível consulta de situação")
             if await page.locator(checkbox_selector).is_checked():
-                await page.click(checkbox_selector)
+                print(f'seletor está marcado - desmarcarseletor: {checkbox_selector}')
+                await page.wait_for_selector(checkbox_selector).click()
                 return True, index + 1 
             #await page.wait_for_selector(x_final, state = "visible", timeout = 100000)
         else:
