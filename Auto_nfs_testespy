@@ -21,6 +21,33 @@ async def iniciar_browser():
         print(f"Erro ao iniciar o navegador Playwright: {e}")
         return None, None, None
 
+async def reiniciar_playwright():
+    global playwright, browser, __package__
+    
+    try:
+        if browser: #se o navegador estiver ativo
+            await browser.close()#espera o navegador fechar
+    except Exception as e:
+        print(f'erro em fecharo o navegador antes de reiniciar o playwright')
+
+        playwright = await async_playwright().start()#iniciando o navegador playwright novamente com await e async
+        browser = await playwright.chromium.launch(headless= False)#instanciando navegador para chromium com tela
+        context = await browser.new_context()
+        page = await context.new_page()#instanciacao sequencial navegador -> contexto de pagina -> pagina recebe essa nova pagina aberta
+        print('pagina reaberta com sucesso✅')
+        return page #preciso retornar esse objeto pagina para acessar com as outras funcionalidades
+    
+async def chamar_restart_navegador(page):
+    try:
+        await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
+    except Exception as e:
+        print('erro ao acessar o website Bling')
+        print('chamando funcao de reiniciar playwright')
+        page = await reiniciar_playwright() #por que instanciar novamente pagina?
+        await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
+        await login_bling(page)
+        return page
+
 async def login_bling(page):
     try:
 
@@ -112,7 +139,6 @@ async def processar_itens_nota(page, cfop, index):
     except Exception as e:
         print(f"Erro ao processar os itens da nota fiscal: {e}")
         
-
 async def processar_item(page, cfop, item_selector, index, checkbox_selector):
     cfop_campo_verificar = "#edCfop"
     cfop_verificado = await page.input_value(cfop_campo_verificar)
@@ -367,10 +393,6 @@ async def corrigir_erro_municipio(page):
         await page.locator(seletor_botao_salvar).click()
         print('botao de salvamento de endereco clicado')
 
-
-
-
-
 async def emitir_nota_fiscal(page, index):
     try:
         enviar_nota_selector = "#container > div.side.new-box-side > div.new-side-bar-full > div > div.main-actions > button:nth-child(1) > span.action-text.hide-on-minimize"
@@ -477,9 +499,13 @@ async def main():
     playwright, browser, page = await iniciar_browser()
     if browser is None or page is None:
         print("Falha ao iniciar o navegador. Finalizando...")
+        await reiniciar_playwright(page)
         return
-
-    await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
+    try:
+        if browser and browser.is_connected():
+            await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
+    except Exception as e:
+        print(f'Erro durante a abertura da página web, ou ela fechou sozinha: {e}')
 
     await login_bling(page)
     await filtrar_notas(page)
@@ -520,7 +546,11 @@ async def main():
     print(lista_erros)
     print(mensagens_erro)
 
-    await browser.close()   
+    print('⚠️estamos fechando o navegador')
+
+    if await browser.close():
+        await reiniciar_playwright(page)
+        print('⚠️⚠️playwright reiniciado⚠️⚠️')   
 
 if __name__ == "__main__":
     asyncio.run(main())
