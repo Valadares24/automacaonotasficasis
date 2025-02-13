@@ -22,20 +22,22 @@ async def iniciar_browser():
         return None, None, None
 
 async def reiniciar_playwright():
-    global playwright, browser, __package__
+    #global playwright, browser
     
     try:
         if browser: #se o navegador estiver ativo
             await browser.close()#espera o navegador fechar
+            print('navegador fechado com sucesso antes de reiniciar♻️♻️')
     except Exception as e:
-        print(f'erro em fecharo o navegador antes de reiniciar o playwright')
+        print(f'erro em fecharo o navegador antes de reiniciar o playwright')#excecao apenas com mensagem
+    #assim que acessar esse bloco de cod e fechar o navegador, vamos executar as demais tarefas:
+    playwright = await async_playwright().start()#iniciando o navegador playwright novamente com await e async
+    browser = await playwright.chromium.launch(headless= False)#instanciando navegador para chromium com tela
+    context = await browser.new_context()
+    page = await context.new_page()#instanciacao sequencial navegador -> contexto de pagina -> pagina recebe essa nova pagina aberta
+    print('pagina reaberta com sucesso✅')
 
-        playwright = await async_playwright().start()#iniciando o navegador playwright novamente com await e async
-        browser = await playwright.chromium.launch(headless= False)#instanciando navegador para chromium com tela
-        context = await browser.new_context()
-        page = await context.new_page()#instanciacao sequencial navegador -> contexto de pagina -> pagina recebe essa nova pagina aberta
-        print('pagina reaberta com sucesso✅')
-        return page #preciso retornar esse objeto pagina para acessar com as outras funcionalidades
+    return playwright, browser, page #preciso retornar esse objeto pagina para acessar com as outras funcionalidades
     
 async def chamar_restart_navegador(page):
     try:
@@ -499,13 +501,17 @@ async def main():
     playwright, browser, page = await iniciar_browser()
     if browser is None or page is None:
         print("Falha ao iniciar o navegador. Finalizando...")
-        await reiniciar_playwright(page)
+        browser, page = await reiniciar_playwright(page)#nao entendi isso, pedir explicacao detalhada
         return
     try:
         if browser and browser.is_connected():
             await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
     except Exception as e:
         print(f'Erro durante a abertura da página web, ou ela fechou sozinha: {e}')
+        print(f'reiniciar playwright')
+        browser, page = await reiniciar_playwright(page)#nao entendi isso, pedir explicacao detalhada
+        
+
 
     await login_bling(page)
     await filtrar_notas(page)
@@ -548,9 +554,16 @@ async def main():
 
     print('⚠️estamos fechando o navegador')
 
-    if await browser.close():
-        await reiniciar_playwright(page)
-        print('⚠️⚠️playwright reiniciado⚠️⚠️')   
+    try:
+        if browser.is_connected():#verificando se o navegador ainda está aberto
+            await browser.close()#garantindo encerramento antes de reiniciar
+            print("🔄 Navegador fechado corretamente.")
+    except Exception as e:
+        print(f"⚠️ Erro ao fechar o navegador: {e}")
+
+    print('🔄 Reiniciando Playwright antes de finalizar...')
+    browser, page = await reiniciar_playwright()#atribuindo esses parametros novamente porque eles mudam de estado
+    print('✅ Playwright reiniciado com sucesso!')
 
 if __name__ == "__main__":
     asyncio.run(main())
