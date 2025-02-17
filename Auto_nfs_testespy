@@ -21,8 +21,7 @@ async def iniciar_browser():
         print(f"Erro ao iniciar o navegador Playwright: {e}")
         return None, None, None
 
-async def reiniciar_playwright():
-    #global playwright, browser
+async def reiniciar_playwright():   
     
     try:
         if browser: #se o navegador estiver ativo
@@ -36,19 +35,22 @@ async def reiniciar_playwright():
     context = await browser.new_context()
     page = await context.new_page()#instanciacao sequencial navegador -> contexto de pagina -> pagina recebe essa nova pagina aberta
     print('pagina reaberta com sucesso✅')
-
+    await chamar_restart_navegador(playwright, browser, page)
     return playwright, browser, page #preciso retornar esse objeto pagina para acessar com as outras funcionalidades
+
     
-async def chamar_restart_navegador(page):
+async def chamar_restart_navegador(playwright, browser, page):
+    
     try:
         await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
     except Exception as e:
         print('erro ao acessar o website Bling')
         print('chamando funcao de reiniciar playwright')
-        page = await reiniciar_playwright() #por que instanciar novamente pagina?
+        page = await reiniciar_playwright()#que instanciar novamente pagina?
         await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
-        await login_bling(page)
-        return page
+    #await login_bling(page)
+   # await filtrar_notas(page)
+    return page
 
 async def login_bling(page):
     try:
@@ -315,8 +317,6 @@ async def verificar_erro_salvamento(page):
     await page.wait_for_timeout(3000)#tempo alterado
 
     try:
-
-
         await page.wait_for_load_state("load")
 
         mensagem_erro_locator =  page.locator("#mensagem > p:nth-child(2)")#seletor atualizado com  await page.locator
@@ -342,10 +342,11 @@ async def verificar_erro_salvamento(page):
             print("Nenhum erro detectado após salvar a nota.")
             return False
 
-                
     except Exception as e:
         print(f"Erro ao verificar mensagem de erro: {e}")
+        exit
         return False
+    
         
 async def verificar_tipo_erro(page):
     await page.wait_for_load_state("load")
@@ -360,11 +361,13 @@ async def verificar_tipo_erro(page):
         print(f'mensagem de erro capturada: {texto_especifico_erro}')
         print(f'foram encontradas : {len(mensagens_erro)} mensagens de erro após tentativa de salvamento', sep = '_')
         mensagens_erro.append(texto_especifico_erro)
-        return mensagens_erro    
+           
     if 'município' or 'CEP' in texto_especifico_erro:#atualizacao de alcance de mensagem condicional
-        await corrigir_erro_municipio(page)
-        
-        
+        await corrigir_erro_municipio(page)  
+    else:
+        print('erro de salvamento não incluso no cenario de endereços')
+        exit
+    return mensagens_erro     
     #erro_especifico_capturado_texto = await page.inner_text(mensagens_erro)
     #lista_erros.append(mensagens_erro.strip())
     #print(f'os erros são: {erro_especifico_capturado_texto}')
@@ -376,22 +379,32 @@ async def verificar_tipo_erro(page):
 async def corrigir_erro_municipio(page):
         seletor_lapis_editar_dados_cliente_endereco = '#formNotaFiscal > div > div > div:nth-child(25) > div.vertical-align.align-input-icons > span > a:nth-child(3) > i'
         seletor_lupa_cep = '#buscaCep > i'
-        seletor_campo_bairro = '#bairro'
-        seletor_campo_endereco = '#endereco'
-        seletor_campo_complemento = '#complemento'
+        seletor_campo_bairro = 'input#bairro.bling-item-form'
+        seletor_campo_endereco = '#btnConsultaCadContribuinte ~ input#endereco'
+        seletor_campo_complemento = '#td_complemento #complemento'
         seletor_botao_salvar = '#salvar-contato-rapido'
 
 
         await page.locator(seletor_lapis_editar_dados_cliente_endereco).click()
         print('seletor de edicao de endereco clicado')
+
         await page.locator(seletor_lupa_cep).click()
         print('seletor de lupa para pesquisa de cep pressionado')
-        await page.locator(seletor_campo_endereco).fill('nulo')
-        print('seletor de campo de endereço preenchido com "nulo"')
-        await page.locator(seletor_campo_complemento).fill('nulo')
+
+        await page.wait_for_selector(seletor_campo_endereco, state = "visible", timeout = 500 )
+        await page.fill(seletor_campo_endereco, "nulo")
         print('seletor de campo de complemento preenchido com "nulo')
+        
+        await page.wait_for_selector(seletor_campo_bairro, state = "visible", timeout = 500)
         await page.locator(seletor_campo_bairro).fill('nulo')
         print('seletor de campo de bairro preenchido com "nulo')
+        
+        await page.wait_for_selector(seletor_campo_complemento, state = "visible", timeout = 500)
+        await page.locator(seletor_campo_complemento).fill('nulo')
+        print('seletor de campo de complemento preenchido com "nulo"')
+        
+
+        await page.wait_for_timeout(5)
         await page.locator(seletor_botao_salvar).click()
         print('botao de salvamento de endereco clicado')
 
@@ -499,71 +512,71 @@ def determinar_cfop(cep_text):
 
 async def main():
     playwright, browser, page = await iniciar_browser()
-    if browser is None or page is None:
-        print("Falha ao iniciar o navegador. Finalizando...")
-        browser, page = await reiniciar_playwright(page)#nao entendi isso, pedir explicacao detalhada
-        return
-    try:
-        if browser and browser.is_connected():
-            await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
-    except Exception as e:
-        print(f'Erro durante a abertura da página web, ou ela fechou sozinha: {e}')
-        print(f'reiniciar playwright')
-        browser, page = await reiniciar_playwright(page)#nao entendi isso, pedir explicacao detalhada
-        
-
-
-    await login_bling(page)
-    await filtrar_notas(page)
-
-    success_count = 0
-    error_count = 0
-    index = 1
-    notas_inexistentes_consecutivas = 0
-
     while True:
+        if browser is None or page is None:
+            print("Falha ao iniciar o navegador. Finalizando...")
+            browser, page = await reiniciar_playwright()#nao entendi isso, pedir explicacao detalhada
+            return
         try:
-            nota_existe = await page.is_visible(f"tr:nth-child({index}) td:nth-child(1) div input")
-            if not nota_existe:
-                notas_inexistentes_consecutivas += 1
-                print(f"Nota fiscal {index} não encontrada. Consecutivas: {notas_inexistentes_consecutivas}")
-                if notas_inexistentes_consecutivas >= 2:
-                    print("Encerrando script: Não há mais notas fiscais para processar.")
-                    print(lista_erros)
-                    break
-                index += 1
-                continue
-
-            notas_inexistentes_consecutivas = 0
-            erro, novo_index = await processar_nota_fiscal(page, index, checkbox_selector)
-            if erro:
-                error_count += 1
-            else:
-                success_count += 1
-            index = novo_index
-
+            if browser and browser.is_connected():
+                await page.goto("https://www.bling.com.br/notas.fiscais.php#list")
         except Exception as e:
-            print(f"Erro no processamento da nota fiscal {index}: {e}")
-            error_count += 1
-            index += 1
+            print(f'Erro durante a abertura da página web, ou ela fechou sozinha: {e}')
+            print(f'reiniciar playwright')
+            playwright, browser, page = await reiniciar_playwright()#nao entendi isso, pedir explicacao detalhada
 
-    print(f"Notas fiscais processadas com sucesso: {success_count}")
-    print(f"Notas fiscais com erro: {error_count}")
-    print(lista_erros)
-    print(mensagens_erro)
+        await login_bling(page)
+        await filtrar_notas(page)
 
-    print('⚠️estamos fechando o navegador')
+        success_count = 0
+        error_count = 0
+        index = 1
+        notas_inexistentes_consecutivas = 0
 
-    try:
-        if browser.is_connected():#verificando se o navegador ainda está aberto
-            await browser.close()#garantindo encerramento antes de reiniciar
-            print("🔄 Navegador fechado corretamente.")
-    except Exception as e:
-        print(f"⚠️ Erro ao fechar o navegador: {e}")
+        while True:
+            try:
+                nota_existe = await page.is_visible(f"tr:nth-child({index}) td:nth-child(1) div input")
+                if not nota_existe:
+                    notas_inexistentes_consecutivas += 1
+                    print(f"Nota fiscal {index} não encontrada. Consecutivas: {notas_inexistentes_consecutivas}")
+                    if notas_inexistentes_consecutivas >= 2:
+                        print("Encerrando script: Não há mais notas fiscais para processar.")
+                        print(lista_erros)
+                        break
+                    index += 1
+                    continue
 
-    print('🔄 Reiniciando Playwright antes de finalizar...')
-    browser, page = await reiniciar_playwright()#atribuindo esses parametros novamente porque eles mudam de estado
-    print('✅ Playwright reiniciado com sucesso!')
+                notas_inexistentes_consecutivas = 0
+                erro, novo_index = await processar_nota_fiscal(page, index, checkbox_selector)
+                if erro:
+                    error_count += 1
+                else:
+                    success_count += 1
+                index = novo_index
+
+            except Exception as e:
+                print(f"Erro no processamento da nota fiscal {index}: {e}")
+                error_count += 1
+                index += 1
+
+        print(f"Notas fiscais processadas com sucesso: {success_count}")
+        print(f"Notas fiscais com erro: {error_count}")
+        print(lista_erros)
+        print(mensagens_erro)
+
+        print('⚠️estamos fechando o navegador')
+
+        try:
+            if browser.is_connected():#verificando se o navegador ainda está aberto
+                await browser.close()#garantindo encerramento antes de reiniciar
+                print("🔄 Navegador fechado corretamente.")
+        except Exception as e:
+            print(f"⚠️ Erro ao fechar o navegador: {e}")
+
+        print('🔄 Reiniciando Playwright antes de finalizar...')
+        playwright, browser, page = await reiniciar_playwright()#atribuindo esses parametros novamente porque eles mudam de estado
+        print('✅ Playwright reiniciado com sucesso!')
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
