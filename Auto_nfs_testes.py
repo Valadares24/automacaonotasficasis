@@ -1,7 +1,7 @@
 import asyncio
 from playwright.async_api import async_playwright
 import time
-
+import pandas as pd
 
 lista_erros = []
 mensagens_erro = []
@@ -31,7 +31,7 @@ async def reiniciar_playwright():
         print(f'erro em fecharo o navegador antes de reiniciar o playwright')#excecao apenas com mensagem
     #assim que acessar esse bloco de cod e fechar o navegador, vamos executar as demais tarefas:
     playwright = await async_playwright().start()#iniciando o navegador playwright novamente com await e async
-    browser = await playwright.chromium.launch(headless= False)#instanciando navegador para chromium com tela
+    browser = await playwright.chromium.launch(headless= False) #instanciando navegador para chromium com tela
     context = await browser.new_context()
     page = await context.new_page()#instanciacao sequencial navegador -> contexto de pagina -> pagina recebe essa nova pagina aberta
     print('pagina reaberta com sucesso✅')
@@ -363,6 +363,7 @@ async def verificar_tipo_erro(page):
         mensagens_erro.append(texto_especifico_erro)
            
     if 'município' or 'CEP' in texto_especifico_erro:#atualizacao de alcance de mensagem condicional
+        
         await corrigir_erro_municipio(page)  
     else:
         print('erro de salvamento não incluso no cenario de endereços')
@@ -382,6 +383,7 @@ async def corrigir_erro_municipio(page):
         seletor_campo_bairro = 'input#bairro.bling-item-form'
         seletor_campo_endereco = '#btnConsultaCadContribuinte ~ input#endereco'
         seletor_campo_complemento = '#td_complemento #complemento'
+        selector_botao_cidade = 'input#cidade.tipsyOff.bling-item-form.ui-autocomplete-input'
         seletor_botao_salvar = '#salvar-contato-rapido'
 
 
@@ -392,16 +394,22 @@ async def corrigir_erro_municipio(page):
         print('seletor de lupa para pesquisa de cep pressionado')
 
         await page.wait_for_selector(seletor_campo_endereco, state = "visible", timeout = 500 )
-        await page.fill(seletor_campo_endereco, "nulo")
+        await page.locator(seletor_campo_endereco).fill('nulo')
+        #await page.fill(seletor_campo_endereco, "nulo")
         print('seletor de campo de complemento preenchido com "nulo')
         
         await page.wait_for_selector(seletor_campo_bairro, state = "visible", timeout = 500)
         await page.locator(seletor_campo_bairro).fill('nulo')
         print('seletor de campo de bairro preenchido com "nulo')
+
+        # await page.wait_for_selector(selector_botao_cidade, state = 'visible', timeout = 500)
+        # await page.locator(selector_botao_cidade).fill('nulo')
+        # print('seletor de cidade preenchido com nulo')
         
         await page.wait_for_selector(seletor_campo_complemento, state = "visible", timeout = 500)
         await page.locator(seletor_campo_complemento).fill('nulo')
         print('seletor de campo de complemento preenchido com "nulo"')
+        #após o salvamento não estamos conseguindo manter as informações
         
 
         await page.wait_for_timeout(5)
@@ -564,6 +572,9 @@ async def main():
         print(lista_erros)
         print(mensagens_erro)
 
+        dataframe = pd.DataFrame(lista_erros,mensagens_erro)
+        print(dataframe)
+        dataframe.to_csv(index= False)
         print('⚠️estamos fechando o navegador')
 
         try:
